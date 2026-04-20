@@ -1,5 +1,8 @@
 "use client";
 
+import { RazorpayPaymentForm } from "@/components/checkout/RazorpayPaymentForm";
+import { finalizeRazorpaySession } from "@/lib/data/razorpay";
+
 import type {
   AddressParams,
   Cart,
@@ -102,6 +105,7 @@ export const PaymentSection = forwardRef<
   // Payment gateway state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
+  const [externalId, setExternalId] = useState<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
@@ -142,12 +146,13 @@ export const PaymentSection = forwardRef<
         if (requestId !== sessionRequestIdRef.current) return;
 
         if (result.success && result.session) {
-          const secret = result.session.external_data?.client_secret as
+          const secret = (result.session.external_data?.client_secret || result.session.external_data?.client_key) as
             | string
             | undefined;
           if (secret) {
             setClientSecret(secret);
             setPaymentSessionId(result.session.id);
+            setExternalId(result.session.external_id);
           } else {
             setGatewayError(t("failedToInitPayment"));
           }
@@ -423,7 +428,7 @@ export const PaymentSection = forwardRef<
             <div className="flex items-center gap-3">
               <RadioGroupItem value="__new__" />
               <span className="text-sm font-medium text-gray-900">
-                {t("creditCard")}
+                {sessionPaymentMethod ? sessionPaymentMethod.name : t("creditCard")}
               </span>
             </div>
           </div>
@@ -453,11 +458,29 @@ export const PaymentSection = forwardRef<
 
           {clientSecret && !loading && isAddingNew && (
             <div className="p-4">
-              <StripePaymentForm
-                key={clientSecret}
-                clientSecret={clientSecret}
-                onReady={handleGatewayReady}
-              />
+              {sessionPaymentMethod?.name?.toLowerCase().includes("razorpay") ? (
+                <RazorpayPaymentForm
+                  key={paymentSessionId}
+                  amount={parseFloat(cart.total) * 100}
+                  currency={cart.currency}
+                  clientKey={clientSecret}
+                  orderId={externalId || ""}
+                  customerName={`${billAddress.first_name} ${billAddress.last_name}`}
+                  customerEmail={cart.email || ""}
+                  customerContact={billAddress.phone || ""}
+                  onReady={handleGatewayReady as any}
+                  onSuccess={async (paymentId, signature) => {
+                    if (!externalId) throw new Error("Missing Razorpay Order ID");
+                    await finalizeRazorpaySession(externalId, paymentId, signature);
+                  }}
+                />
+              ) : (
+                <StripePaymentForm
+                  key={clientSecret}
+                  clientSecret={clientSecret}
+                  onReady={handleGatewayReady}
+                />
+              )}
             </div>
           )}
 

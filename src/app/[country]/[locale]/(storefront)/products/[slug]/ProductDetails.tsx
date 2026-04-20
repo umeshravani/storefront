@@ -12,6 +12,7 @@ import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics/gtm";
+import { RazorpayAffordability } from "@/components/products/RazorpayAffordability";
 
 interface ProductDetailsProps {
   product: Product;
@@ -210,6 +211,17 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               </Button>
             </div>
           </div>
+
+          {/* RAZORPAY AFFORDABILITY WIDGET */}
+            {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
+              <div className="mt-6">
+                <RazorpayAffordability
+                  amount={currentAmountCents || (parseFloat(price?.amount || "0") * 100)}
+                  currency={currency || "INR"}
+                  clientKey={process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}
+                />
+              </div>
+            )}
 
           {/* Description */}
           {product.description && (

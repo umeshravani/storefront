@@ -55,12 +55,6 @@ const nextConfig: NextConfig = {
         hostname: "**.trycloudflare.com",
         pathname: "/rails/active_storage/**",
       },
-      // Added thewallx.com here to fix the Next.js image loading error
-      {
-        protocol: "https",
-        hostname: "thewallx.com",
-        pathname: "/rails/active_storage/**",
-      },
     ],
   },
 };

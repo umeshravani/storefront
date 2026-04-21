@@ -20,7 +20,7 @@ export async function cachedListProducts(
   _userToken?: string,
 ) {
   "use cache: remote";
-  cacheLife({ revalidate: 600 });
+  cacheLife("tenMinutes");
   cacheTag("products");
   return getClient().products.list(params, options);
 }
@@ -47,7 +47,7 @@ export async function cachedGetProduct(
   _userToken?: string,
 ) {
   "use cache: remote";
-  cacheLife({ revalidate: 600 });
+  cacheLife("tenMinutes");
   cacheTag("products", `product:${slugOrId}`);
   return getClient().products.get(slugOrId, { expand }, options);
 }
@@ -67,7 +67,7 @@ async function cachedGetProductFilters(
   _userToken?: string,
 ) {
   "use cache: remote";
-  cacheLife({ revalidate: 600 });
+  cacheLife("tenMinutes");
   cacheTag("product-filters");
   return getClient().products.filters(params, options);
 }

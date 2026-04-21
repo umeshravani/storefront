@@ -9,7 +9,7 @@ async function cachedListCategories(
   options: { locale?: string; country?: string },
 ) {
   "use cache: remote";
-  cacheLife({ revalidate: 3600 });
+  cacheLife("hours");
   cacheTag("categories");
   return getClient().categories.list(params, options);
 }
@@ -25,7 +25,7 @@ async function cachedGetCategory(
   options: { locale?: string; country?: string },
 ) {
   "use cache: remote";
-  cacheLife({ revalidate: 600 });
+  cacheLife("tenMinutes");
   cacheTag("category");
   return getClient().categories.get(idOrPermalink, params, options);
 }
@@ -50,7 +50,7 @@ async function cachedListCategoryProducts(
   _userToken?: string,
 ) {
   "use cache: remote";
-  cacheLife({ revalidate: 600 });
+  cacheLife("tenMinutes");
   cacheTag("products", `category-products:${categoryId}`);
   return getClient().products.list(
     { ...params, in_category: categoryId },

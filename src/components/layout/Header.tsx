@@ -59,7 +59,7 @@ export async function Header({
       center={
         <Link href={basePath || "/"} className="flex items-center min-w-0">
           <img
-            src="@/public/wallx.svg"
+            src="wallx.svg"
             alt={storeName}
             width={90}
             height={32}

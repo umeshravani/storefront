@@ -123,7 +123,7 @@ function MediaGalleryInner({
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {images.map((image, index) => {
             const thumbUrl = getThumbImageUrl(image);
             return (

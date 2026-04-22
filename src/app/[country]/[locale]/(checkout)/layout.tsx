@@ -10,6 +10,7 @@ import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { getStoreName } from "@/lib/store";
 import { extractBasePath } from "@/lib/utils/path";
+import logo from "../../../public/wallx.svg";
 
 const storeName = getStoreName();
 
@@ -22,10 +23,11 @@ function CheckoutHeader() {
     <header className="flex items-center justify-between">
       <Link href={basePath || "/"} className="flex items-center space-x-2">
         <Image
-          src="wallx.webp"
+          src="/wallx.svg"
           alt={storeName}
           width={90}
-          height={28}
+          height={32}
+          className="object-contain w-[90px] h-auto"
           fetchPriority="high"
           loading="eager"
         />
@@ -106,7 +108,7 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Mobile header */}
       <div className="lg:hidden border-b border-gray-200">
-        <div className="px-5">
+        <div className="px-5 py-4">
           <CheckoutHeader />
         </div>
       </div>

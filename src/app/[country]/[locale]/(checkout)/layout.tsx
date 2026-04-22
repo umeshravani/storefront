@@ -138,6 +138,7 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
             <CheckoutSummary />
           </div>
         </div>
+        <div className="bg-gray-50"></div>
       </div>
     </div>
   );

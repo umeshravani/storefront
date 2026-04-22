@@ -58,11 +58,11 @@ export async function Header({
       }
       center={
         <Link href={basePath || "/"} className="flex items-center min-w-0">
-          <img
+          <Image
             src="wallx.webp"
             alt={storeName}
             width={90}
-            height={32}
+            height={28}
             className="max-w-full object-contain"
             style={{ width: "auto", height: "auto" }}
             fetchPriority="high"

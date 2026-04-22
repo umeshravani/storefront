@@ -21,8 +21,8 @@ function CheckoutHeader() {
   return (
     <header className="flex items-center justify-between">
       <Link href={basePath || "/"} className="flex items-center space-x-2">
-        <Image
-          src="/spree.png"
+        <img
+          src="wallx.webp"
           alt={storeName}
           width={90}
           height={32}

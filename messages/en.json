@@ -40,7 +40,7 @@
     "myAccount": "My Account"
   },
   "footer": {
-    "description": "Open-source ecommerce powered by Spree REST API, TypeScript SDK, and Next.js. Self-host it. Own your data. Zero platform fees.",
+    "description": "India's premier destination for framed arts, canvas arts, acrylic arts and resin arts. Transform your space with our timeless artistry.",
     "forkOnGithub": "Fork this storefront on GitHub",
     "quickstartGuide": "Quickstart guide",
     "learnMore": "Learn more about Spree Commerce",
@@ -53,7 +53,8 @@
     "cart": "Cart",
     "policies": "Policies",
     "poweredBy": "Powered by",
-    "copyright": "© {year} {storeName}. Powered by Spree Commerce."
+    "abrandof": "A Brand of",
+    "copyright": "© {year} {storeName}. A Brand of Artolika.Inc."
   },
   "home": {
     "welcome": "{storeName} Storefront",

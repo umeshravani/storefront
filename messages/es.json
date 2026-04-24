@@ -53,6 +53,7 @@
     "cart": "Carrito",
     "policies": "Politicas",
     "poweredBy": "Impulsado por",
+    "abrandof": "A Brand of",
     "copyright": "\u00a9 {year} {storeName}. Impulsado por Spree Commerce."
   },
   "home": {

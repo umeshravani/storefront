@@ -53,6 +53,7 @@
     "cart": "Koszyk",
     "policies": "Regulaminy",
     "poweredBy": "Zasilany przez",
+    "abrandof": "A Brand of",
     "copyright": "© {year} {storeName}. Zasilany przez Spree Commerce."
   },
   "home": {

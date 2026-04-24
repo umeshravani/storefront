@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 import logo from "../../../public/wallx.svg";
+import paymenticons from "../../../public/paymenticons.svg";
 
 const storeName = getStoreName();
 const storeDescription = getStoreDescription();
@@ -43,6 +44,16 @@ export async function Footer({
             <p className="mt-4 text-sm text-neutral-400">
               {t("description") || storeDescription}
             </p>
+            {/* Updated Payment Icons */}
+            <Image
+              src="/paymenticons.svg"
+              alt={`${storeName} accepted payment methods`}
+              width={90}
+              height={32}
+              className="object-contain w-full max-w-[280px] h-auto mt-8"
+              fetchPriority="high"
+              loading="eager"
+            />
           </div>
 
           {/* Links */}

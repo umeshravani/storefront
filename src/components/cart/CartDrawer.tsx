@@ -193,37 +193,37 @@ export function CartDrawer() {
                       )}
 
                       {/* Quantity & Price */}
-                      <div className="mt-3 flex items-center justify-between">
-                        <QuantityPicker
-                          quantity={item.quantity}
-                          onDecrement={() =>
-                            updateItem(item.id, Math.max(1, item.quantity - 1))
-                          }
-                          onIncrement={() =>
-                            updateItem(item.id, item.quantity + 1)
-                          }
-                          disabled={updating}
-                        />
+<div className="mt-3 flex items-center justify-between">
+  <QuantityPicker
+    quantity={item.quantity}
+    onDecrement={() =>
+      updateItem(item.id, Math.max(1, item.quantity - 1))
+    }
+    onIncrement={() =>
+      updateItem(item.id, item.quantity + 1)
+    }
+    disabled={updating}
+  />
 
-                        <div className="text-sm font-medium">
-                          {item.compare_at_amount &&
-                          parseFloat(item.compare_at_amount) >
-                            parseFloat(item.price) ? (
-                            <>
-                              <span className="text-gray-400 line-through mr-2">
-                                {item.display_compare_at_amount}
-                              </span>
-                              <span className="text-red-600">
-                                {item.display_price}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-gray-900">
-                              {item.display_price}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+  <div className="text-sm font-medium flex flex-col items-end">
+    {item.compare_at_amount &&
+    parseFloat(item.compare_at_amount) >
+      parseFloat(item.price) ? (
+      <>
+        <span className="text-gray-400 line-through">
+          {item.display_compare_at_amount}
+        </span>
+        <span className="text-red-600 mt-0.5">
+          {item.display_price}
+        </span>
+      </>
+    ) : (
+      <span className="text-gray-900">
+        {item.display_price}
+      </span>
+    )}
+  </div>
+</div>
                     </div>
                   </div>
                 </li>

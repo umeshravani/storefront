@@ -53,6 +53,7 @@
     "cart": "Warenkorb",
     "policies": "Richtlinien",
     "poweredBy": "Betrieben von",
+    "abrandof": "A Brand of",
     "copyright": "© {year} {storeName}. Unterstützt durch Spree Commerce."
   },
   "home": {

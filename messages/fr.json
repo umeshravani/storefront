@@ -53,6 +53,7 @@
     "cart": "Panier",
     "policies": "Politiques",
     "poweredBy": "Propulse par",
+    "abrandof": "A Brand of",
     "copyright": "\u00a9 {year} {storeName}. Propulse par Spree Commerce."
   },
   "home": {

@@ -12,6 +12,7 @@ import {
 } from "@/lib/seo";
 import { getStoreUrl } from "@/lib/store";
 import { ProductDetails } from "./ProductDetails";
+import ProductReviews from "@/components/products/ProductReviews";
 
 interface ProductPageProps {
   params: Promise<{
@@ -95,6 +96,11 @@ export default async function ProductPage({
         )}
       </div>
       <ProductDetails product={product} basePath={basePath} />
+      <ProductReviews 
+        productId={product.id} 
+        productName={product.name}
+        slug={product.slug} 
+      />
     </>
   );
 }

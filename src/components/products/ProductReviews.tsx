@@ -121,7 +121,8 @@ export default function ProductReviews({
                 const json = await res.json();
 
                 if (json.data) {
-                    const fetchedReviews = json.data;
+                    // --- FIX: Strictly filter out unapproved/disapproved reviews ---
+                    const fetchedReviews = json.data.filter((r: any) => r.approved === true);
                     setReviews(fetchedReviews);
 
                     if (fetchedReviews.length > 0) {
@@ -135,8 +136,16 @@ export default function ProductReviews({
 
                         setSummary({
                             average: Number((sum / fetchedReviews.length).toFixed(1)),
-                            totalCount: json.meta?.total_count || fetchedReviews.length,
+                            // --- FIX: Use the actual approved array length, NOT json.meta.total_count ---
+                            totalCount: fetchedReviews.length,
                             distribution: dist,
+                        });
+                    } else {
+                        // Reset if no approved reviews exist
+                        setSummary({
+                            average: 0,
+                            totalCount: 0,
+                            distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
                         });
                     }
                 }
@@ -415,7 +424,7 @@ export default function ProductReviews({
             {/* --- ADD REVIEW MODAL --- */}
             {isModalOpen && isLoggedIn && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 p-4 antialiased">
-                    <div className="relative max-h-full w-full max-w-2xl p-4">
+                    <div className="relative max-h-full w-full max-w-2xl p-0">
                         <div className="relative rounded-lg bg-white shadow dark:bg-gray-800">
                             <div className="flex items-center justify-between rounded-t border-b border-gray-200 p-4 dark:border-gray-700 md:p-5">
                                 <div>
@@ -465,7 +474,7 @@ export default function ProductReviews({
                                                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                                     </svg>
                                                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or Video (Max 50MB)</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or Video (Max 50MB)</p>
                                                     {selectedFilesCount > 0 && (
                                                         <p className={`mt-2 text-sm font-bold ${THEME.textHighlight}`}>{selectedFilesCount} file(s) selected</p>
                                                     )}

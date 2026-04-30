@@ -3,7 +3,6 @@
 import type { OptionType, Variant } from "@spree/sdk";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
 
 interface VariantPickerProps {
   variants: Variant[];
@@ -19,6 +18,7 @@ export function VariantPicker({
   onVariantChange,
 }: VariantPickerProps) {
   const t = useTranslations("products");
+
   const optionValuesMap = useMemo(() => {
     const map: Record<string, Set<string>> = {};
 
@@ -127,7 +127,7 @@ export function VariantPicker({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {optionTypes.map((optionType) => {
         const values = Array.from(optionValuesMap[optionType.id] || []);
         const selectedValue = selectedOptions[optionType.id];
@@ -135,12 +135,13 @@ export function VariantPicker({
 
         return (
           <div key={optionType.id}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-900">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-sm font-semibold text-gray-900">
                 {optionType.label}
               </span>
               {selectedValue && (
                 <span className="text-sm text-gray-500">
+                  —{" "}
                   {getOptionValueDetails(optionType.id, selectedValue)?.label ||
                     selectedValue}
                 </span>
@@ -148,7 +149,7 @@ export function VariantPicker({
             </div>
 
             {isColor ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-4">
                 {values.map((value) => {
                   const optionValue = getOptionValueDetails(
                     optionType.id,
@@ -169,17 +170,17 @@ export function VariantPicker({
                       disabled={!isAvailable}
                       title={optionValue?.label || value}
                       className={`
-                        w-10 h-10 rounded-lg border transition-all relative overflow-hidden
-                        ${isSelected ? "border-gray-900 ring-2 ring-primary ring-offset-2" : "border-gray-200"}
+                        w-8 h-8 rounded-full transition-colors duration-200 relative border
+                        ${isSelected ? "ring-1 ring-gray-900 ring-offset-2 border-transparent" : "border-gray-200"}
                         ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}
                         ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
                       style={
                         optionValue?.image_url
                           ? {
-                              backgroundImage: `url(${optionValue.image_url})`,
-                              backgroundSize: "cover",
-                            }
+                            backgroundImage: `url(${optionValue.image_url})`,
+                            backgroundSize: "cover",
+                          }
                           : optionValue?.color_code
                             ? { backgroundColor: optionValue.color_code }
                             : { backgroundColor: "#e5e7eb" }
@@ -187,7 +188,7 @@ export function VariantPicker({
                     >
                       {!isPurchasable && isAvailable && (
                         <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="w-full h-0.5 bg-gray-400 rotate-45 absolute" />
+                          <span className="w-full h-[1px] bg-gray-500 rotate-45 absolute" />
                         </span>
                       )}
                     </button>
@@ -195,7 +196,7 @@ export function VariantPicker({
                 })}
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {values.map((value) => {
                   const optionValue = getOptionValueDetails(
                     optionType.id,
@@ -209,25 +210,30 @@ export function VariantPicker({
                   );
 
                   return (
-                    <Button
+                    <button
                       type="button"
                       key={value}
-                      variant="outline"
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
-                      className={
-                        isSelected
-                          ? "ring-2 ring-primary ring-offset-2 border-primary"
-                          : ""
-                      }
+                      className={`
+                        px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border
+                        ${isSelected
+                          ? "bg-gray-900 border-gray-900 text-white font-medium"
+                          : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                        }
+                        ${!isAvailable ? "opacity-30 cursor-not-allowed !bg-gray-50 !text-gray-400" : "cursor-pointer"}
+                      `}
                     >
                       {optionValue?.label || value}
                       {!isPurchasable && isAvailable && (
-                        <span className="ml-1 text-xs text-gray-400">
+                        <span
+                          className={`ml-2 text-xs font-normal ${isSelected ? "text-gray-300" : "text-gray-400"
+                            }`}
+                        >
                           {t("outOfStockVariant")}
                         </span>
                       )}
-                    </Button>
+                    </button>
                   );
                 })}
               </div>

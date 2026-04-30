@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     qualities: [25, 50, 75, 85, 100],
-    dangerouslyAllowLocalIP: true, // Allow localhost images in development
+    dangerouslyAllowLocalIP: true, 
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
@@ -55,7 +55,6 @@ const nextConfig: NextConfig = {
         hostname: "**.trycloudflare.com",
         pathname: "/rails/active_storage/**",
       },
-      // Added thewallx.com here to fix the Next.js image loading error
       {
         protocol: "https",
         hostname: "thewallx.com",
@@ -63,27 +62,37 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  
+  async rewrites() {
+    const baseUrl = (process.env.NEXT_PUBLIC_SPREE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+
+    return [
+      {
+        // Proxy our image-upload backdoor route
+        source: "/api/custom_reviews/:path*",
+        destination: `${baseUrl}/api/custom_reviews/:path*`,
+      },
+      {
+        // Proxy the standard Spree V3 Store API
+        source: "/api/v3/store/:path*",
+        destination: `${baseUrl}/api/v3/store/:path*`,
+      }
+    ];
+  },
 };
 
 const configWithIntl = withNextIntl(nextConfig);
 
 export default process.env.SENTRY_DSN
   ? withSentryConfig(configWithIntl, {
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      silent: !process.env.CI,
-
-      // Upload a larger set of source maps for prettier stack traces (increases build time)
-      widenClientFileUpload: true,
-
-      // Automatically delete source maps after uploading to Sentry
-      // so they are not served publicly
-      sourcemaps: {
-        deleteSourcemapsAfterUpload: true,
-      },
-
-      // Disables the Sentry SDK build-time telemetry
-      telemetry: false,
-    })
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: !process.env.CI,
+    widenClientFileUpload: true,
+    sourcemaps: {
+      deleteSourcemapsAfterUpload: true,
+    },
+    telemetry: false,
+  })
   : configWithIntl;

@@ -19,10 +19,30 @@ interface ProductDetailsProps {
   basePath: string;
 }
 
+// Reusable Star Icon
+const StarIcon = ({ filled = true, className = "" }) => (
+  <svg
+    className={`h-4 w-4 shrink-0 ${filled ? "text-yellow-400" : "text-gray-200"} ${className}`}
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+  </svg>
+);
+
 export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const { addItem } = useCart();
   const { currency } = useStore();
   const t = useTranslations("products");
+
+  // Reviews Summary State
+  const [reviewSummary, setReviewSummary] = useState<{ average: number; totalCount: number } | null>(null);
+
+  // Dynamic Error States (Handles Stale Cache Scenarios)
+  const [cartError, setCartError] = useState<string | null>(null);
+  const [isLiveOutOfStock, setIsLiveOutOfStock] = useState(false);
 
   // Filter variants list
   const variants = useMemo(() => {
@@ -40,17 +60,48 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     if (hasVariants) {
       return variants.find((v) => v.purchasable) || variants[0];
     }
-    // For products without variants, use default variant
     return product.default_variant || null;
   });
 
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Track product view (analytics - client-only side effect)
+  // Track product view
   useEffect(() => {
     trackViewItem(product, currency);
   }, [product, currency]);
+
+  // Reset errors instantly if the user selects a different color/size
+  useEffect(() => {
+    setCartError(null);
+    setIsLiveOutOfStock(false);
+  }, [selectedVariant?.id]);
+
+  // Fetch real reviews data
+  useEffect(() => {
+    const fetchReviewSummary = async () => {
+      try {
+        const res = await fetch(`/api/custom_reviews/${product.slug}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && json.data.length > 0) {
+            const fetchedReviews = json.data;
+            let sum = 0;
+            fetchedReviews.forEach((r: any) => {
+              sum += r.rating;
+            });
+            setReviewSummary({
+              average: Number((sum / fetchedReviews.length).toFixed(1)),
+              totalCount: json.meta?.total_count || fetchedReviews.length,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch review summary:", error);
+      }
+    };
+    fetchReviewSummary();
+  }, [product.slug]);
 
   const galleryImages = useMemo((): Media[] => {
     return product.media || [];
@@ -83,42 +134,62 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const strikethroughPrice = onSale
     ? ((originalPrice?.display_amount &&
       originalPrice.display_amount !== displayPrice
-        ? originalPrice.display_amount
-        : price?.display_compare_at_amount) ?? null)
+      ? originalPrice.display_amount
+      : price?.display_compare_at_amount) ?? null)
     : null;
 
-  // Purchasability
-  const isPurchasable = hasVariants
+  // INITIAL Cache Purchasability
+  const initialPurchasable = hasVariants
     ? (selectedVariant?.purchasable ?? false)
     : (product.purchasable ?? false);
 
-  const inStock = hasVariants
+  const initialInStock = hasVariants
     ? (selectedVariant?.in_stock ?? false)
     : (product.in_stock ?? false);
+
+  // ULTIMATE Live Status (Overrides cache if API blocks addition)
+  const displayPurchasable = initialPurchasable && !isLiveOutOfStock;
+  const displayInStock = initialInStock && !isLiveOutOfStock;
 
   const handleAddToCart = async () => {
     const variantId =
       selectedVariant?.id ||
       product.default_variant?.id ||
       product.default_variant_id;
+
     if (!variantId) {
-      throw new Error("No variant selected");
+      setCartError("No variant selected");
+      return;
     }
 
     setLoading(true);
+    setCartError(null);
+    setIsLiveOutOfStock(false);
+
     try {
       await addItem(variantId, quantity);
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-      return;
+      trackAddToCart(product, selectedVariant, quantity, currency);
+    } catch (error: any) {
+      // Safely extract the API error message
+      let errMsg = typeof error === 'string' ? error : (error?.message || "Could not add item to cart.");
+
+      // Clean up any frontend prefix strings
+      errMsg = errMsg.replace(/^Failed to add item to cart:\s*/i, '').replace(/^"|"$/g, '');
+
+      setCartError(errMsg);
+
+      // If the database rejects it due to inventory limits, auto-flip the UI to out of stock
+      const lowerMsg = errMsg.toLowerCase();
+      if (lowerMsg.includes("not available") || lowerMsg.includes("out of stock") || lowerMsg.includes("quantity")) {
+        setIsLiveOutOfStock(true);
+      }
     } finally {
       setLoading(false);
     }
-    trackAddToCart(product, selectedVariant, quantity, currency);
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Media Gallery */}
         <div>
@@ -131,18 +202,38 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+
+          {/* Real Reviews Summary */}
+          {reviewSummary && reviewSummary.totalCount > 0 && (
+            <div className="mt-3 flex items-center gap-2 sm:mt-2">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <StarIcon key={i} filled={i < Math.round(reviewSummary.average)} />
+                ))}
+              </div>
+              <p className="text-sm font-medium leading-none text-gray-500">
+                ({reviewSummary.average})
+              </p>
+              <button
+                onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                className="text-sm font-medium leading-none text-gray-900 hover:underline"
+              >
+                {reviewSummary.totalCount} {reviewSummary.totalCount === 1 ? 'Review' : 'Reviews'}
+              </button>
+            </div>
+          )}
 
           {/* Price */}
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-4 flex items-center gap-2">
             {displayPrice && (
-              <span className="text-3xl font-bold text-gray-900">
+              <span className="text-xl font-bold text-gray-900">
                 {displayPrice}
               </span>
             )}
             {onSale && strikethroughPrice && (
               <>
-                <span className="text-xl text-gray-500 line-through">
+                <span className="text-sm text-gray-500 line-through">
                   {strikethroughPrice}
                 </span>
                 <span className="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded">
@@ -152,18 +243,27 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             )}
           </div>
 
-          {/* Stock Status */}
+          {/* Stock Status (Dynamic & Custom UI) */}
           <div className="mt-4">
-            {inStock ? (
-              <span className="inline-flex items-center gap-1.5 text-green-600">
-                <CircleCheckBig className="w-5 h-5" />
-                {t("inStock")}
-              </span>
+            {displayInStock ? (
+              <div className="flex items-center gap-2.5 text-[#14854E]">
+                <div className="relative flex h-[13px] w-[13px] shrink-0 items-center justify-center z-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#14854E] opacity-75 -z-10"></span>
+                  <span className="relative inline-flex h-full w-full rounded-full bg-white shadow-[inset_0_0_0_4px_#14854E]"></span>
+                </div>
+                <span className="text-sm font-medium flex-1">
+                  In Stock and ready to ship
+                </span>
+              </div>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-red-600">
-                <CircleX className="w-5 h-5" />
-                {t("outOfStock")}
-              </span>
+              <div className="flex items-center gap-2.5 text-red-600">
+                <div className="relative flex h-[13px] w-[13px] shrink-0 items-center justify-center">
+                  <span className="relative inline-flex h-full w-full rounded-full bg-white shadow-[inset_0_0_0_4px_currentColor]"></span>
+                </div>
+                <span className="text-sm font-medium flex-1">
+                  {t("outOfStock")}
+                </span>
+              </div>
             )}
           </div>
 
@@ -179,8 +279,16 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             </div>
           )}
 
+          {/* Live Dynamic Cart Error Banner */}
+          {cartError && (
+            <div className="mt-6 flex items-start gap-3 text-sm text-red-800 bg-red-50 p-4 rounded-lg border border-red-200">
+              <CircleX className="w-5 h-5 shrink-0 mt-0.5" />
+              <p className="font-medium">{cartError}</p>
+            </div>
+          )}
+
           {/* Quantity & Add to Cart */}
-          <div className="mt-8">
+          <div className="mt-6">
             <div className="flex gap-4">
               <QuantityPicker
                 quantity={quantity}
@@ -189,18 +297,17 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 size="lg"
               />
 
-              {/* Add to Cart Button */}
               <Button
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={loading || !isPurchasable}
+                disabled={loading || !displayPurchasable}
               >
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin h-5 w-5" />
                     {t("adding")}
                   </>
-                ) : isPurchasable ? (
+                ) : displayPurchasable ? (
                   <>
                     <ShoppingBag className="w-5 h-5" />
                     {t("addToCart")}
@@ -213,15 +320,15 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           </div>
 
           {/* RAZORPAY AFFORDABILITY WIDGET */}
-            {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
-              <div className="mt-6">
-                <RazorpayAffordability
-                  amount={currentAmountCents || (parseFloat(price?.amount || "0") * 100)}
-                  currency={currency || "INR"}
-                  clientKey={process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}
-                />
-              </div>
-            )}
+          {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
+            <div className="mt-6">
+              <RazorpayAffordability
+                amount={currentAmountCents || (parseFloat(price?.amount || "0") * 100)}
+                currency={currency || "INR"}
+                clientKey={process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}
+              />
+            </div>
+          )}
 
           {/* Description */}
           {product.description && (

@@ -53,6 +53,7 @@ export default function ProductReviews({
         currentIndex: 0,
     });
 
+    // Custom UI Notification State
     const [notification, setNotification] = useState<{
         show: boolean;
         message: string;
@@ -72,7 +73,9 @@ export default function ProductReviews({
                     const parsed = JSON.parse(sdkData);
                     if (parsed.access_token) return parsed.access_token;
                 }
-            } catch (e)
+            } catch (e) { 
+                // Ignore parsing errors
+            }
         }
         return "";
     };
@@ -82,12 +85,12 @@ export default function ProductReviews({
             try {
                 const token = getActiveToken();
                 const headers: Record<string, string> = {};
-
+                
                 if (token) headers["Authorization"] = `Bearer ${token}`;
                 if (NEXT_PUBLIC_SPREE_API_KEY) headers["X-Spree-Api-Key"] = NEXT_PUBLIC_SPREE_API_KEY;
 
                 const res = await fetch(`/api/custom_reviews/${slug}`, { headers });
-
+                
                 if (!res.ok) {
                     const errText = await res.text();
                     throw new Error(`API Error ${res.status}: ${errText}`);
@@ -133,7 +136,7 @@ export default function ProductReviews({
 
         const token = getActiveToken();
         const headers: Record<string, string> = {};
-
+        
         if (token) headers["Authorization"] = `Bearer ${token}`;
         if (NEXT_PUBLIC_SPREE_API_KEY) headers["X-Spree-Api-Key"] = NEXT_PUBLIC_SPREE_API_KEY;
 
@@ -202,6 +205,7 @@ export default function ProductReviews({
         <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 relative">
             <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
 
+                {/* --- HEADER --- */}
                 <div className="flex items-center gap-2">
                     <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                         Customer Reviews
@@ -223,6 +227,7 @@ export default function ProductReviews({
                     )}
                 </div>
 
+                {/* --- SUMMARY DISTRIBUTION --- */}
                 <div className="my-6 gap-8 sm:flex sm:items-start md:my-8">
                     <div className="shrink-0 space-y-4">
                         <p className="text-2xl font-semibold leading-none text-gray-900 dark:text-white">
@@ -274,6 +279,7 @@ export default function ProductReviews({
                     )}
                 </div>
 
+                {/* --- ACTUAL REVIEWS LIST --- */}
                 <div className="mt-6 divide-y divide-gray-200 dark:divide-gray-700">
                     {reviews.map((review) => (
                         <div key={review.id} className="gap-3 pb-6 sm:flex sm:items-start pt-6">
@@ -353,6 +359,7 @@ export default function ProductReviews({
                 </div>
             </div>
 
+            {/* --- ADD REVIEW MODAL --- */}
             {isModalOpen && isLoggedIn && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 p-4 antialiased">
                     <div className="relative max-h-full w-full max-w-2xl">
@@ -424,11 +431,13 @@ export default function ProductReviews({
                 </div>
             )}
 
+            {/* --- IMAGE / VIDEO LIGHTBOX --- */}
             {lightbox.isOpen && lightbox.media.length > 0 && (
                 <div role="dialog" aria-modal="true" aria-label="Open image zoom" className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center" onClick={closeLightbox}>
                     <button type="button" className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-lg transition-colors z-10" aria-label="Close lightbox" onClick={closeLightbox}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                     </button>
+
                     {lightbox.media.length > 1 && (
                         <>
                             <button type="button" className="absolute left-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10 rounded-lg transition-colors z-10" aria-label="Previous image" onClick={prevMedia}>
@@ -465,6 +474,7 @@ export default function ProductReviews({
                 </div>
             )}
 
+            {/* --- CUSTOM THEME NOTIFICATION MODAL --- */}
             {notification && notification.show && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center transform transition-all scale-100 opacity-100">
@@ -477,14 +487,14 @@ export default function ProductReviews({
                                 <svg className="h-7 w-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                             </div>
                         )}
-
+                        
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                             {notification.isError ? "Oops!" : "Thank You!"}
                         </h3>
                         <p className="text-base text-gray-600 dark:text-gray-300 mb-6">
                             {notification.message}
                         </p>
-
+                        
                         <button
                             onClick={() => setNotification(null)}
                             className="w-full inline-flex justify-center rounded-lg border border-transparent px-5 py-3 bg-black text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"

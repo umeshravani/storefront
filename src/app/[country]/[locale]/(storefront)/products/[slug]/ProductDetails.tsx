@@ -190,9 +190,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Media Gallery */}
-        <div>
+      {/* Added lg:items-start to ensure the grid items don't stretch vertically */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:items-start">
+
+        {/* Media Gallery - STICKY ON DESKTOP */}
+        <div className="lg:sticky lg:top-24 lg:self-start lg:z-10">
           <MediaGallery
             images={galleryImages}
             productName={product.name}
@@ -201,12 +203,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
         </div>
 
         {/* Product Info */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
 
           {/* Real Reviews Summary */}
           {reviewSummary && reviewSummary.totalCount > 0 && (
-            <div className="mt-3 flex items-center gap-2 sm:mt-2">
+            <div className="mt-3 flex items-center gap-2 sm:mt-2 mb-2">
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
                   <StarIcon key={i} filled={i < Math.round(reviewSummary.average)} />
@@ -225,7 +227,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           )}
 
           {/* Price */}
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 mb-4 flex items-center gap-2">
             {displayPrice && (
               <span className="text-xl font-bold text-gray-900">
                 {displayPrice}
@@ -241,6 +243,17 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 </span>
               </>
             )}
+          </div>
+
+          {/* Shipping Note */}
+          <div className="mt-1.5 text-sm text-gray-500">
+            <a
+              href="/policies/shipping-policy"
+              className="underline hover:text-gray-900 transition-colors"
+            >
+              Shipping
+            </a>{" "}
+            calculated at checkout.
           </div>
 
           {/* Stock Status (Dynamic & Custom UI) */}

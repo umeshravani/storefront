@@ -13,6 +13,7 @@ import {
 import { getStoreUrl } from "@/lib/store";
 import { ProductDetails } from "./ProductDetails";
 import ProductReviews from "@/components/products/ProductReviews";
+import { cookies } from "next/headers";
 
 interface ProductPageProps {
   params: Promise<{
@@ -51,6 +52,13 @@ export default async function ProductPage({
   const { country, locale, slug } = await params;
   const { category_id } = await searchParams;
   const basePath = `/${country}/${locale}`;
+  const cookieStore = await cookies();
+  const authToken =
+    cookieStore.get("_spree_jwt")?.value ||
+    cookieStore.get("spree_bearer_token")?.value ||
+    cookieStore.get("_spree_refresh_token")?.value ||
+    "";
+  const isLoggedIn = !!authToken;
 
   let product;
   try {
@@ -62,9 +70,9 @@ export default async function ProductPage({
   const storeUrl = getStoreUrl();
   const canonicalUrl = storeUrl
     ? buildCanonicalUrl(
-        storeUrl,
-        `/${country}/${locale}/products/${product.slug}`,
-      )
+      storeUrl,
+      `/${country}/${locale}/products/${product.slug}`,
+    )
     : undefined;
 
   const breadcrumbCategory = findBreadcrumbCategory(
@@ -95,11 +103,16 @@ export default async function ProductPage({
           />
         )}
       </div>
+
       <ProductDetails product={product} basePath={basePath} />
-      <ProductReviews 
-        productId={product.id} 
+
+      <ProductReviews
+        productId={product.id}
         productName={product.name}
-        slug={product.slug} 
+        slug={product.slug}
+        basePath={basePath}
+        isLoggedIn={isLoggedIn}
+        authToken={authToken}
       />
     </>
   );

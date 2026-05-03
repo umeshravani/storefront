@@ -116,17 +116,18 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const customerName =
     order.billing_address?.full_name || order.shipping_address?.full_name || "";
 
-  // Helper to encode the address for the map query
+// Helper to encode the address for the map query
   const getMapQuery = () => {
     if (!order.shipping_address) return "";
     const addr = order.shipping_address;
-
-    // Safely extract zipcode by bypassing strict TS typing, just in case the SDK types are outdated
+    
+    // Safely extract properties by bypassing strict TS typing
     const zip = (addr as any).zipcode || (addr as any).zipCode || "";
-
+    const countryName = (addr as any).country?.name || (addr as any).country_name || "";
+    
     // Privacy-friendly view of City, State, Zip, Country.
     return encodeURIComponent(
-      `${addr.city}, ${addr.state_name || ""} ${zip}, ${addr.country?.name || ""}`
+      `${addr.city}, ${addr.state_name || ""} ${zip}, ${countryName}`
     );
   };
 

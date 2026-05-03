@@ -42,7 +42,7 @@ export async function Breadcrumbs({
   items.push({
     name: category.name,
     href: `${basePath}/c/${category.permalink}`,
-    isCurrent: !productName, 
+    isCurrent: !productName,
   });
 
   return (

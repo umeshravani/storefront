@@ -120,9 +120,13 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const getMapQuery = () => {
     if (!order.shipping_address) return "";
     const addr = order.shipping_address;
+
+    // Safely extract zipcode by bypassing strict TS typing, just in case the SDK types are outdated
+    const zip = (addr as any).zipcode || (addr as any).zipCode || "";
+
     // Privacy-friendly view of City, State, Zip, Country.
     return encodeURIComponent(
-      `${addr.city}, ${addr.state_name || ""} ${addr.zipcode}, ${addr.country?.name || ""}`
+      `${addr.city}, ${addr.state_name || ""} ${zip}, ${addr.country?.name || ""}`
     );
   };
 

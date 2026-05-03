@@ -57,33 +57,25 @@ export function RazorpayPaymentForm({
           currency: currency,
           name: "Checkout",
           order_id: orderId,
-          handler: async (response: any) => {
-            try {
-              // 1. Verify the signature directly with the Rails backend
-              const apiUrl = process.env.NEXT_PUBLIC_SPREE_API_URL || "";
-              const verifyRes = await fetch(`${apiUrl}/razorpay/verify`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  razorpay_order_id: orderId,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
+          handler: (response: any) => {
+            // 1. Resolve the promise immediately. 
+            // This tells PaymentSection.tsx that the modal is closed and releases the safety lock.
+            resolve({});
+
+            // 2. Wait a fraction of a second for React to process the lock release, 
+            // then trigger the final Spree approval pipeline.
+            setTimeout(() => {
+              const sessionResultPayload = JSON.stringify({
+                razorpay_order_id: orderId,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
               });
 
-              if (!verifyRes.ok) {
-                throw new Error("Payment verification failed on the server.");
-              }
-
-              // 2. Tell the Next.js PaymentSection that we are approved!
-              // It will now safely trigger onPaymentComplete and finish the order.
-              await onApproved();
-              resolve({});
-            } catch (err: any) {
-              resolve({ error: err.message || "Payment verification failed" });
-            }
+              onApproved(sessionResultPayload).catch((err) => {
+                console.error("Approval flow failed:", err);
+                setError("Failed to finalize order. Please contact support.");
+              });
+            }, 150);
           },
           prefill: {
             name: customerName,

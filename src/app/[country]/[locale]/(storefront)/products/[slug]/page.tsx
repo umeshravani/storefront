@@ -52,6 +52,8 @@ export default async function ProductPage({
   const { country, locale, slug } = await params;
   const { category_id } = await searchParams;
   const basePath = `/${country}/${locale}`;
+
+  // --- FIX: Capture the exact JWT token from cookies ---
   const cookieStore = await cookies();
   const authToken =
     cookieStore.get("_spree_jwt")?.value ||
@@ -106,6 +108,7 @@ export default async function ProductPage({
 
       <ProductDetails product={product} basePath={basePath} />
 
+      {/* Passed basePath so the component knows where to route logins */}
       <ProductReviews
         productId={product.id}
         productName={product.name}

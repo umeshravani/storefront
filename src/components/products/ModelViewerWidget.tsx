@@ -9,6 +9,13 @@ declare global {
             "model-viewer": any;
         }
     }
+    namespace React {
+        namespace JSX {
+            interface IntrinsicElements {
+                "model-viewer": any;
+            }
+        }
+    }
 }
 
 interface InteractiveColor {
@@ -65,7 +72,7 @@ export default function ModelViewerWidget({ config }: ModelViewerWidgetProps) {
                     }
                 }
 
-                // 3. Apply the "Default Color" you selected in the Admin Panel!
+                // 3. Apply the "Default Color" selected in the Admin Panel
                 if (mat.baseColor && !mat.textureUrl) {
                     materialInstance.pbrMetallicRoughness.setBaseColorFactor(mat.baseColor);
                 }
@@ -77,7 +84,7 @@ export default function ModelViewerWidget({ config }: ModelViewerWidgetProps) {
         return () => viewer.removeEventListener("load", applyMaterials);
     }, [config]);
 
-    // React cleanly handles our color button clicks!
+    // React cleanly handles our color button clicks targeting the raw meshName
     const handleColorClick = (meshName: string, hexCode: string) => {
         const viewer = viewerRef.current;
         if (viewer && viewer.model) {
@@ -120,12 +127,14 @@ export default function ModelViewerWidget({ config }: ModelViewerWidgetProps) {
                     {isLoaded && (
                         <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-3">
                             {config.materials.map((mat, idx) => {
+                                // Respect the new Visibility Toggle from the Spree Admin!
                                 if (mat.interactiveColors.length === 0) return null;
 
                                 return (
                                     <div key={idx} className="bg-white/80 backdrop-blur-md border border-white/40 shadow-lg p-3 rounded-2xl">
                                         <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                            {mat.displayName || mat.meshName}
+                                            {/* Uses the Custom Display Name, falls back to raw Mesh Name */}
+                                            {mat.displayName || mat.meshName} Colors
                                         </span>
                                         <div className="flex flex-wrap gap-2">
                                             {mat.interactiveColors.map((color, cIdx) => (

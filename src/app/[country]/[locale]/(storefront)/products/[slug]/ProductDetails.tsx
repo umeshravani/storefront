@@ -1,9 +1,10 @@
 "use client";
 
 import type { Media, Product, Variant } from "@spree/sdk";
-import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
+import { CircleX, Loader2, ShoppingBag, Box } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
@@ -13,6 +14,12 @@ import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics/gtm";
 import { RazorpayAffordability } from "@/components/products/RazorpayAffordability";
+
+// Dynamically import the 3D Viewer to prevent Next.js SSR errors with Web Components
+const ModelViewerWidget = dynamic(
+  () => import("@/components/products/ModelViewerWidget"),
+  { ssr: false }
+);
 
 interface ProductDetailsProps {
   product: Product;
@@ -44,6 +51,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const [cartError, setCartError] = useState<string | null>(null);
   const [isLiveOutOfStock, setIsLiveOutOfStock] = useState(false);
 
+  // View Mode for toggling 3D AR Viewer
+  const [viewMode, setViewMode] = useState<"gallery" | "3d">("gallery");
+
   // Filter variants list
   const variants = useMemo(() => {
     return (product.variants || []).filter(Boolean);
@@ -65,6 +75,19 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // Safely extract and format the injected 3D Config from the Spree API Response
+  const threeDConfig = useMemo(() => {
+    const rawConfig = (product as any).three_d_config || (product as any).attributes?.three_d_config || null;
+    if (!rawConfig) return null;
+
+    // Deep copy to avoid mutating the original product state
+    const config = JSON.parse(JSON.stringify(rawConfig));
+
+    return config;
+  }, [product]);
+
+  const base3DModelUrl = threeDConfig?.modelUrl || null;
 
   // Track product view
   useEffect(() => {
@@ -170,15 +193,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
       await addItem(variantId, quantity);
       trackAddToCart(product, selectedVariant, quantity, currency);
     } catch (error: any) {
-      // Safely extract the API error message
       let errMsg = typeof error === 'string' ? error : (error?.message || "Could not add item to cart.");
-
-      // Clean up any frontend prefix strings
       errMsg = errMsg.replace(/^Failed to add item to cart:\s*/i, '').replace(/^"|"$/g, '');
 
       setCartError(errMsg);
 
-      // If the database rejects it due to inventory limits, auto-flip the UI to out of stock
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("not available") || lowerMsg.includes("out of stock") || lowerMsg.includes("quantity")) {
         setIsLiveOutOfStock(true);
@@ -190,16 +209,43 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Added lg:items-start to ensure the grid items don't stretch vertically */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:items-start">
 
-        {/* Media Gallery - STICKY ON DESKTOP */}
-        <div className="lg:sticky lg:top-24 lg:self-start lg:z-10">
-          <MediaGallery
-            images={galleryImages}
-            productName={product.name}
-            activeIndex={variantImageIndex}
-          />
+        {/* Media Gallery / 3D Viewer - STICKY ON DESKTOP */}
+        <div className="lg:sticky lg:top-24 lg:self-start lg:z-10 flex flex-col gap-4">
+
+          {/* Conditional Rendering */}
+          {viewMode === "3d" && base3DModelUrl ? (
+            <ModelViewerWidget config={threeDConfig} />
+          ) : (
+            <MediaGallery
+              images={galleryImages}
+              productName={product.name}
+              activeIndex={variantImageIndex}
+            />
+          )}
+
+          {/* View Mode Toggle */}
+          {base3DModelUrl && (
+            <div className="flex justify-center gap-2 mt-2">
+              <Button
+                variant={viewMode === "gallery" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("gallery")}
+              >
+                Product Images
+              </Button>
+              <Button
+                variant={viewMode === "3d" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("3d")}
+                className="gap-2"
+              >
+                <Box className="w-4 h-4" />
+                3D
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Product Info */}
@@ -256,7 +302,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             calculated at checkout.
           </div>
 
-          {/* Stock Status (Dynamic & Custom UI) */}
+          {/* Stock Status */}
           <div className="mt-4">
             {displayInStock ? (
               <div className="flex items-center gap-2.5 text-[#14854E]">
@@ -332,6 +378,29 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             </div>
           </div>
 
+          {/* VIEW IN SPACE (AR) BUTTON */}
+          {base3DModelUrl && (
+            <div className="mt-4">
+              <Button
+                variant="default"
+                size="lg"
+                className="w-full gap-2 text-white hover:bg-black"
+                onClick={() => {
+                  setViewMode("3d");
+                  setTimeout(() => {
+                    const viewer = document.querySelector("model-viewer") as any;
+                    if (viewer && viewer.activateAR) {
+                      viewer.activateAR();
+                    }
+                  }, 100);
+                }}
+              >
+                <Box className="w-5 h-5" />
+                View in your space
+              </Button>
+            </div>
+          )}
+
           {/* RAZORPAY AFFORDABILITY WIDGET */}
           {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
             <div className="mt-6">
@@ -349,13 +418,37 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 {t("description")}
               </h2>
-              {/* Description is admin-authored HTML from the Spree CMS backend (trusted source) */}
               <div
                 className="text-gray-600 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               />
             </div>
           )}
+
+          {/* Dynamic Landing Page Features from Spree Metafields */}
+          {product.custom_fields?.map((field) => {
+            if (field.key === "properties.landing_page_features" && field.value) {
+              try {
+                const features = JSON.parse(field.value);
+                return (
+                  <div key={field.id} className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {features.map((feat: any, idx: number) => (
+                      <div key={idx} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">{feat.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{feat.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              } catch (e) {
+                console.error("Failed to parse landing_page_features JSON", e);
+                return null;
+              }
+            }
+            return null;
+          })}
 
           {/* Custom Fields */}
           <ProductCustomFields customFields={product.custom_fields} />

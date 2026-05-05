@@ -68,14 +68,19 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        // Proxy all /api/ requests to catch our backend routes
+        source: "/api/:path*",
+        destination: `${baseUrl}/api/:path*`,
+      },
+      {
         // Proxy our image-upload backdoor route
         source: "/api/custom_reviews/:path*",
         destination: `${baseUrl}/api/custom_reviews/:path*`,
       },
       {
-        // Proxy the standard Spree V3 Store API
-        source: "/api/v3/store/:path*",
-        destination: `${baseUrl}/api/v3/store/:path*`,
+        // NO-CORS PROXY: Silently intercept Models and Textures and securely stream them from Rails
+        source: "/rails/active_storage/:path*",
+        destination: `${baseUrl}/rails/active_storage/:path*`,
       }
     ];
   },
@@ -89,10 +94,17 @@ export default process.env.SENTRY_DSN
     project: process.env.SENTRY_PROJECT,
     authToken: process.env.SENTRY_AUTH_TOKEN,
     silent: !process.env.CI,
+
+    // Upload a larger set of source maps for prettier stack traces (increases build time)
     widenClientFileUpload: true,
+
+    // Automatically delete source maps after uploading to Sentry
+    // so they are not served publicly
     sourcemaps: {
       deleteSourcemapsAfterUpload: true,
     },
+
+    // Disables the Sentry SDK build-time telemetry
     telemetry: false,
   })
   : configWithIntl;

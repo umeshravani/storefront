@@ -171,7 +171,7 @@ export default function ModelViewerWidget({ config }: ModelViewerWidgetProps) {
                 <div className={`absolute inset-0 z-50 flex items-center justify-center bg-gray-50/90 backdrop-blur-md transition-opacity duration-700 pointer-events-none ${isLoaded ? 'opacity-0' : 'opacity-100'}`}>
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Optimizing Textures...</span>
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Loading 3D Experience...</span>
                     </div>
                 </div>
 

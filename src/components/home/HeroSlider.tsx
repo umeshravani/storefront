@@ -17,25 +17,25 @@ export function HeroSlider({ basePath, shopNowText }: HeroSliderProps) {
       title: "A Legacy of Art, Framed for Eternity",
       description: "Transform your space with our timeless artistry. Shop now for the best in indian art innovation",
       // Desktop image (Landscape)
-      image: "https://thewallx.com/images/slider/01%20Slider%20WallX.webp", 
+      image: "/images/slider/01%20Slider%20WallX.webp", 
       // Mobile image (Portrait) - Replace with your actual mobile URL
-      mobileImage: "https://thewallx.com/images/slider/mobile/01%20Slider%20WallX.webp", 
+      mobileImage: "/images/slider/mobile/01%20Slider%20WallX.webp", 
       ctaUrl: `${basePath}/products?category=frames`,
       ctaText: "Start Framing",
     },
     {
       title: "Art That Speaks, Frames That Impress",
       description: "Elevate your space with meticulously crafted frames designed to enhance the beauty of every masterpiece.",
-      image: "https://thewallx.com/images/slider/04%20Slider%20WallX.webp",
-      mobileImage: "https://thewallx.com/images/slider/mobile/04%20Slider%20WallX.webp",
+      image: "/images/slider/04%20Slider%20WallX.webp",
+      mobileImage: "/images/slider/mobile/04%20Slider%20WallX.webp",
       ctaUrl: `${basePath}/products?category=hardware`,
       ctaText: "Explore Collection",
     },
     {
       title: "Timeless Art in Luxurious Frames",
       description: "Step into a world of sophistication with premium frames that bring depth, richness, and lasting beauty to your collection.",
-      image: "https://thewallx.com/images/slider/03%20Slider%20WallX.webp",
-      mobileImage: "https://thewallx.com/images/slider/mobile/03%20Slider%20WallX.webp",
+      image: "/images/slider/03%20Slider%20WallX.webp",
+      mobileImage: "/images/slider/mobile/03%20Slider%20WallX.webp",
       ctaUrl: `${basePath}/products?sale=true`,
       ctaText: "Shop The Sale",
     }

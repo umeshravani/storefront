@@ -1,10 +1,9 @@
 "use client";
 
 import type { Media } from "@spree/sdk";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef } from "react";
+import PhotoSwipeLightbox from "photoswipe/lightbox";
+import { useEffect, useRef } from "react";
+import "photoswipe/style.css";
 
 interface MediaLightboxProps {
   images: Media[];
@@ -14,16 +13,6 @@ interface MediaLightboxProps {
   onNavigate: (nextIndex: number) => void;
 }
 
-/**
- * Fullscreen image lightbox. Lazy-loaded from MediaGallery so its
- * keyboard handlers, navigation UI, and next/image full-size render
- * don't ship in the initial product page bundle.
- *
- * Exposed as a real modal dialog (role="dialog", aria-modal="true") with
- * focus moved to the close button on open and restored on close so
- * screen-reader and keyboard users can't get stuck in the page behind
- * the overlay.
- */
 export function MediaLightbox({
   images,
   activeIndex,
@@ -31,104 +20,76 @@ export function MediaLightbox({
   onClose,
   onNavigate,
 }: MediaLightboxProps): React.ReactElement | null {
-  const t = useTranslations("products");
-  const current = images[activeIndex];
-  const src =
-    current?.xlarge_url || current?.large_url || current?.original_url || null;
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // 1. Store the initial index so it doesn't change during renders
+  const initialIndexRef = useRef(activeIndex);
 
-  const goPrev = useCallback(() => {
-    onNavigate(activeIndex === 0 ? images.length - 1 : activeIndex - 1);
-  }, [activeIndex, images.length, onNavigate]);
+  // 2. Store the functions in refs so we can call the latest version of them
+  // without triggering the useEffect cleanup routine!
+  const onCloseRef = useRef(onClose);
+  const onNavigateRef = useRef(onNavigate);
 
-  const goNext = useCallback(() => {
-    onNavigate(activeIndex === images.length - 1 ? 0 : activeIndex + 1);
-  }, [activeIndex, images.length, onNavigate]);
-
+  // Keep refs updated behind the scenes if the parent re-renders
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") goPrev();
-      if (e.key === "ArrowRight") goNext();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [onClose, goPrev, goNext]);
+    onCloseRef.current = onClose;
+    onNavigateRef.current = onNavigate;
+  }, [onClose, onNavigate]);
 
-  // Focus management: capture the previously focused element when the
-  // lightbox mounts, move focus into the dialog, then restore it on
-  // unmount so keyboard users return to the element that opened it.
+  // 3. The Main Initialization
   useEffect(() => {
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    closeButtonRef.current?.focus();
+    let lightbox: PhotoSwipeLightbox | null = new PhotoSwipeLightbox({
+      dataSource: images.map((img) => ({
+        src: img.xlarge_url || img.large_url || img.original_url || "",
+        width: 0,
+        height: 0,
+        alt: img.alt || productName,
+      })),
+      pswpModule: () => import("photoswipe"),
+      initialIndex: initialIndexRef.current,
+      bgOpacity: 0.95,
+      closeOnVerticalDrag: false,
+      wheelToZoom: true,
+      paddingFn: () => ({ top: 30, bottom: 30, left: 0, right: 0 }),
+    });
+
+    lightbox.on("contentLoad", (e) => {
+      const { content } = e;
+      if (content.type === "image" && content.data.width === 0) {
+        const img = new window.Image();
+        img.onload = () => {
+          content.data.width = img.width;
+          content.data.height = img.height;
+          if (lightbox?.pswp) {
+            lightbox.pswp.refreshSlideContent(content.index);
+          }
+        };
+        img.src = content.data.src;
+      }
+    });
+
+    lightbox.on("change", () => {
+      if (lightbox?.pswp) {
+        // Call the ref instead of the raw prop
+        onNavigateRef.current(lightbox.pswp.currIndex);
+      }
+    });
+
+    lightbox.on("destroy", () => {
+      // Call the ref instead of the raw prop
+      onCloseRef.current();
+    });
+
+    lightbox.init();
+    lightbox.loadAndOpen(initialIndexRef.current);
+
     return () => {
-      previouslyFocused?.focus?.();
+      if (lightbox) {
+        lightbox.destroy();
+        lightbox = null;
+      }
     };
+    // 4. THE MAGIC FIX: The empty array [] tells React "DO NOT re-run this ever."
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!src) return null;
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={t("openImageZoom")}
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-      onClick={onClose}
-    >
-      <button
-        ref={closeButtonRef}
-        type="button"
-        className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-        onClick={onClose}
-        aria-label={t("lightboxClose")}
-      >
-        <X className="w-8 h-8" />
-      </button>
-
-      {images.length > 1 && (
-        <>
-          <button
-            type="button"
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              goPrev();
-            }}
-            aria-label={t("lightboxPrev")}
-          >
-            <ChevronLeft className="w-8 h-8" />
-          </button>
-          <button
-            type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              goNext();
-            }}
-            aria-label={t("lightboxNext")}
-          >
-            <ChevronRight className="w-8 h-8" />
-          </button>
-        </>
-      )}
-
-      <div className="relative max-w-4xl max-h-[90vh] w-full h-full m-4">
-        <Image
-          src={src}
-          alt={current?.alt || productName}
-          fill
-          className="object-contain"
-          sizes="100vw"
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-
-      {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-3 py-1 rounded-lg text-sm">
-          {activeIndex + 1} / {images.length}
-        </div>
-      )}
-    </div>
-  );
+  return null;
 }

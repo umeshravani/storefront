@@ -5,6 +5,9 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  // 1. ADDED: Required for efficient Coolify / Docker deployments
+  output: "standalone",
+  
   allowedDevOrigins: ["shop.lvh.me", "*.trycloudflare.com"],
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
@@ -56,15 +59,17 @@ const nextConfig: NextConfig = {
         pathname: "/rails/active_storage/**",
       },
       {
+        // 2. FIXED: Allow images from your new Rails backend subdomain
         protocol: "https",
-        hostname: "thewallx.com",
+        hostname: "admin.thewallx.com",
         pathname: "/rails/active_storage/**",
       },
     ],
   },
   
   async rewrites() {
-    const baseUrl = (process.env.NEXT_PUBLIC_SPREE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+    // 3. FIXED: Properly fetch SPREE_API_URL as a server-side environment variable
+    const baseUrl = (process.env.SPREE_API_URL || process.env.NEXT_PUBLIC_SPREE_API_URL || "http://localhost:3000").replace(/\/$/, "");
 
     return [
       {

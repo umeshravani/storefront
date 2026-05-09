@@ -5,9 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
-  // 1. ADDED: Required for efficient Coolify / Docker deployments
   output: "standalone",
-  
   allowedDevOrigins: ["shop.lvh.me", "*.trycloudflare.com"],
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
@@ -27,16 +25,12 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   cacheLife: {
     tenMinutes: {
-      stale: 300, // 5 minutes client stale window
-      revalidate: 600, // 10 minutes until background revalidation
-      expire: 3600, // 1 hour max before recompute on idle entries
+      stale: 300,
+      revalidate: 600,
+      expire: 3600,
     },
   },
   images: {
-    qualities: [25, 50, 75, 85, 100],
-    dangerouslyAllowLocalIP: true, 
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-images: {
     qualities: [25, 50, 75, 85, 100],
     dangerouslyAllowLocalIP: true, 
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -80,23 +74,19 @@ images: {
     ],
   },
   
-  async rewrites() {
-    // 3. FIXED: Properly fetch SPREE_API_URL as a server-side environment variable
-    const baseUrl = (process.env.SPREE_API_URL || process.env.NEXT_PUBLIC_SPREE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+  rewrites: async () => {
+    const baseUrl = (process.env.SPREE_API_URL || "http://localhost:3000").replace(/\/$/, "");
 
     return [
       {
-        // Proxy all /api/ requests to catch our backend routes
         source: "/api/:path*",
         destination: `${baseUrl}/api/:path*`,
       },
       {
-        // Proxy our image-upload backdoor route
         source: "/api/custom_reviews/:path*",
         destination: `${baseUrl}/api/custom_reviews/:path*`,
       },
       {
-        // NO-CORS PROXY: Silently intercept Models and Textures and securely stream them from Rails
         source: "/rails/active_storage/:path*",
         destination: `${baseUrl}/rails/active_storage/:path*`,
       }
@@ -108,21 +98,14 @@ const configWithIntl = withNextIntl(nextConfig);
 
 export default process.env.SENTRY_DSN
   ? withSentryConfig(configWithIntl, {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    silent: !process.env.CI,
-
-    // Upload a larger set of source maps for prettier stack traces (increases build time)
-    widenClientFileUpload: true,
-
-    // Automatically delete source maps after uploading to Sentry
-    // so they are not served publicly
-    sourcemaps: {
-      deleteSourcemapsAfterUpload: true,
-    },
-
-    // Disables the Sentry SDK build-time telemetry
-    telemetry: false,
-  })
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      sourcemaps: {
+        deleteSourcemapsAfterUpload: true,
+      },
+      telemetry: false,
+    })
   : configWithIntl;

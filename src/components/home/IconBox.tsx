@@ -6,22 +6,22 @@ export function IconBox() {
         {
             title: "Pixel Perfect",
             subtitle: "Hi-Quality Print",
-            icon: "https://app.thewallx.com/images/Pixel%20Perfect.svg",
+            icon: "/images/Pixel%20Perfect.svg",
         },
         {
             title: "Aluminium",
             subtitle: "6063 Grade Alloy",
-            icon: "https://app.thewallx.com/images/Aluminium%20Block.svg",
+            icon: "/images/Aluminium%20Block.svg",
         },
         {
             title: "Anti Corrosion",
             subtitle: "Wear Resistance",
-            icon: "https://app.thewallx.com/images/Anti%20Corrosion.svg",
+            icon: "/images/Anti%20Corrosion.svg",
         },
         {
             title: "Try-VR™",
             subtitle: "Experience in 3D",
-            icon: "https://app.thewallx.com/images/VR%203D.svg",
+            icon: "/images/VR%203D.svg",
         },
     ];
 

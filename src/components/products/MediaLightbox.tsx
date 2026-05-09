@@ -39,7 +39,6 @@ export function MediaLightbox({
         alt: img.alt || productName,
       })),
       pswpModule: () => import("photoswipe"),
-      // ⬇️ initialIndex was removed from here to fix the TypeScript error!
       bgOpacity: 0.95,
       closeOnVerticalDrag: false,
       wheelToZoom: true,
@@ -57,7 +56,8 @@ export function MediaLightbox({
             lightbox.pswp.refreshSlideContent(content.index);
           }
         };
-        img.src = content.data.src;
+        // ⬇️ THE FIX: Added || "" to satisfy TypeScript's strict string requirement
+        img.src = content.data.src || "";
       }
     });
 
@@ -72,8 +72,6 @@ export function MediaLightbox({
     });
 
     lightbox.init();
-
-    // ⬇️ The initial index is correctly passed here instead for v5
     lightbox.loadAndOpen(initialIndexRef.current);
 
     return () => {

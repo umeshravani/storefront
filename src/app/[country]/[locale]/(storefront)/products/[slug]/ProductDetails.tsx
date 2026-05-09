@@ -1,10 +1,10 @@
 "use client";
 
 import type { Media, Product, Variant } from "@spree/sdk";
-import { CircleX, Loader2, ShoppingBag, Box } from "lucide-react";
+import { Box, CircleX, Loader2, ShoppingBag } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
@@ -13,12 +13,13 @@ import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics/gtm";
-import { RazorpayAffordability } from "@/components/products/RazorpayAffordability";
+
+//import { RazorpayAffordability } from "@/components/products/RazorpayAffordability";
 
 // Dynamically import the 3D Viewer to prevent Next.js SSR errors with Web Components
 const ModelViewerWidget = dynamic(
   () => import("@/components/products/ModelViewerWidget"),
-  { ssr: false }
+  { ssr: false },
 );
 
 interface ProductDetailsProps {
@@ -45,7 +46,10 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const t = useTranslations("products");
 
   // Reviews Summary State
-  const [reviewSummary, setReviewSummary] = useState<{ average: number; totalCount: number } | null>(null);
+  const [reviewSummary, setReviewSummary] = useState<{
+    average: number;
+    totalCount: number;
+  } | null>(null);
 
   // Dynamic Error States (Handles Stale Cache Scenarios)
   const [cartError, setCartError] = useState<string | null>(null);
@@ -78,11 +82,18 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   // Safely extract and format the injected 3D Config from the Spree API Response
   const threeDConfig = useMemo(() => {
-    const rawConfig = (product as any).three_d_config || (product as any).attributes?.three_d_config || null;
+    const rawConfig =
+      (product as any).three_d_config ||
+      (product as any).attributes?.three_d_config ||
+      null;
     if (!rawConfig) return null;
 
     // Deep copy to avoid mutating the original product state
     const config = JSON.parse(JSON.stringify(rawConfig));
+
+    // NO CORS HACK: We purposely DO NOT prepend the backendUrl here anymore.
+    // By keeping the paths relative (e.g., "/rails/active_storage/..."), the browser
+    // asks Next.js for the file, and Next.js securely proxies it from Rails!
 
     return config;
   }, [product]);
@@ -157,8 +168,8 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const strikethroughPrice = onSale
     ? ((originalPrice?.display_amount &&
       originalPrice.display_amount !== displayPrice
-      ? originalPrice.display_amount
-      : price?.display_compare_at_amount) ?? null)
+        ? originalPrice.display_amount
+        : price?.display_compare_at_amount) ?? null)
     : null;
 
   // INITIAL Cache Purchasability
@@ -193,13 +204,22 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
       await addItem(variantId, quantity);
       trackAddToCart(product, selectedVariant, quantity, currency);
     } catch (error: any) {
-      let errMsg = typeof error === 'string' ? error : (error?.message || "Could not add item to cart.");
-      errMsg = errMsg.replace(/^Failed to add item to cart:\s*/i, '').replace(/^"|"$/g, '');
+      let errMsg =
+        typeof error === "string"
+          ? error
+          : error?.message || "Could not add item to cart.";
+      errMsg = errMsg
+        .replace(/^Failed to add item to cart:\s*/i, "")
+        .replace(/^"|"$/g, "");
 
       setCartError(errMsg);
 
       const lowerMsg = errMsg.toLowerCase();
-      if (lowerMsg.includes("not available") || lowerMsg.includes("out of stock") || lowerMsg.includes("quantity")) {
+      if (
+        lowerMsg.includes("not available") ||
+        lowerMsg.includes("out of stock") ||
+        lowerMsg.includes("quantity")
+      ) {
         setIsLiveOutOfStock(true);
       }
     } finally {
@@ -210,10 +230,8 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:items-start">
-
         {/* Media Gallery / 3D Viewer - STICKY ON DESKTOP */}
         <div className="lg:sticky lg:top-24 lg:self-start lg:z-10 flex flex-col gap-4">
-
           {/* Conditional Rendering */}
           {viewMode === "3d" && base3DModelUrl ? (
             <ModelViewerWidget config={threeDConfig} />
@@ -250,24 +268,35 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
         {/* Product Info */}
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {product.name}
+          </h1>
 
           {/* Real Reviews Summary */}
           {reviewSummary && reviewSummary.totalCount > 0 && (
             <div className="mt-3 flex items-center gap-2 sm:mt-2 mb-2">
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} filled={i < Math.round(reviewSummary.average)} />
+                  <StarIcon
+                    key={i}
+                    filled={i < Math.round(reviewSummary.average)}
+                  />
                 ))}
               </div>
               <p className="text-sm font-medium leading-none text-gray-500">
                 ({reviewSummary.average})
               </p>
               <button
-                onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                onClick={() =>
+                  window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: "smooth",
+                  })
+                }
                 className="text-sm font-medium leading-none text-gray-900 hover:underline"
               >
-                {reviewSummary.totalCount} {reviewSummary.totalCount === 1 ? 'Review' : 'Reviews'}
+                {reviewSummary.totalCount}{" "}
+                {reviewSummary.totalCount === 1 ? "Review" : "Reviews"}
               </button>
             </div>
           )}
@@ -388,7 +417,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 onClick={() => {
                   setViewMode("3d");
                   setTimeout(() => {
-                    const viewer = document.querySelector("model-viewer") as any;
+                    const viewer = document.querySelector(
+                      "model-viewer",
+                    ) as any;
                     if (viewer && viewer.activateAR) {
                       viewer.activateAR();
                     }
@@ -401,16 +432,17 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             </div>
           )}
 
-          {/* RAZORPAY AFFORDABILITY WIDGET */}
-          {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
-            <div className="mt-6">
-              <RazorpayAffordability
-                amount={currentAmountCents || (parseFloat(price?.amount || "0") * 100)}
-                currency={currency || "INR"}
-                clientKey={process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}
-              />
-            </div>
-          )}
+          {/* 
+  {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
+    <div className="mt-6">
+      <RazorpayAffordability
+        amount={currentAmountCents || (parseFloat(price?.amount || "0") * 100)}
+        currency={currency || "INR"}
+        clientKey={process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}
+      />
+    </div>
+  )} 
+*/}
 
           {/* Description */}
           {product.description && (
@@ -427,16 +459,29 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
           {/* Dynamic Landing Page Features from Spree Metafields */}
           {product.custom_fields?.map((field) => {
-            if (field.key === "properties.landing_page_features" && field.value) {
+            if (
+              field.key === "properties.landing_page_features" &&
+              field.value
+            ) {
               try {
                 const features = JSON.parse(field.value);
                 return (
-                  <div key={field.id} className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div
+                    key={field.id}
+                    className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4"
+                  >
                     {features.map((feat: any, idx: number) => (
-                      <div key={idx} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
+                      <div
+                        key={idx}
+                        className="flex gap-3 p-4 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900">{feat.title}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{feat.description}</p>
+                          <h4 className="font-semibold text-gray-900">
+                            {feat.title}
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {feat.description}
+                          </p>
                         </div>
                       </div>
                     ))}

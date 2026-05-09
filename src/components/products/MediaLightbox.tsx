@@ -20,21 +20,16 @@ export function MediaLightbox({
   onClose,
   onNavigate,
 }: MediaLightboxProps): React.ReactElement | null {
-  // 1. Store the initial index so it doesn't change during renders
   const initialIndexRef = useRef(activeIndex);
 
-  // 2. Store the functions in refs so we can call the latest version of them
-  // without triggering the useEffect cleanup routine!
   const onCloseRef = useRef(onClose);
   const onNavigateRef = useRef(onNavigate);
 
-  // Keep refs updated behind the scenes if the parent re-renders
   useEffect(() => {
     onCloseRef.current = onClose;
     onNavigateRef.current = onNavigate;
   }, [onClose, onNavigate]);
 
-  // 3. The Main Initialization
   useEffect(() => {
     let lightbox: PhotoSwipeLightbox | null = new PhotoSwipeLightbox({
       dataSource: images.map((img) => ({
@@ -44,7 +39,7 @@ export function MediaLightbox({
         alt: img.alt || productName,
       })),
       pswpModule: () => import("photoswipe"),
-      initialIndex: initialIndexRef.current,
+      // ⬇️ initialIndex was removed from here to fix the TypeScript error!
       bgOpacity: 0.95,
       closeOnVerticalDrag: false,
       wheelToZoom: true,
@@ -68,17 +63,17 @@ export function MediaLightbox({
 
     lightbox.on("change", () => {
       if (lightbox?.pswp) {
-        // Call the ref instead of the raw prop
         onNavigateRef.current(lightbox.pswp.currIndex);
       }
     });
 
     lightbox.on("destroy", () => {
-      // Call the ref instead of the raw prop
       onCloseRef.current();
     });
 
     lightbox.init();
+
+    // ⬇️ The initial index is correctly passed here instead for v5
     lightbox.loadAndOpen(initialIndexRef.current);
 
     return () => {
@@ -87,7 +82,6 @@ export function MediaLightbox({
         lightbox = null;
       }
     };
-    // 4. THE MAGIC FIX: The empty array [] tells React "DO NOT re-run this ever."
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

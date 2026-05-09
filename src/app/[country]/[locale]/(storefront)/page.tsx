@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { FeaturedProductsSection } from "@/components/home/FeaturedProductsSection";
 import { HeroSection } from "@/components/home/HeroSection";
+// 1. Import your two new custom components
+import { IconBox } from "@/components/home/IconBox";
+import { CategorySlider } from "@/components/home/CategorySlider";
+
 import { getMarkets, resolveCurrency } from "@/lib/data/markets";
 import { generateHomeMetadata } from "@/lib/metadata/home";
 import { getDefaultCountry, getDefaultLocale } from "@/lib/store";
@@ -74,14 +78,23 @@ export default async function HomePage({ params }: HomePageProps) {
   const currency = await resolveCurrency(country);
 
   return (
-    <div>
+    <main>
+      {/* The Hero Slider */}
       <HeroSection basePath={basePath} locale={locale} />
+
+      {/* 2. Your new Icon Grid */}
+      <IconBox />
+
+      {/* 3. Your new Horizontal Category Slider */}
+      <CategorySlider />
+
+      {/* Spree's native Featured Products Section */}
       <FeaturedProductsSection
         basePath={basePath}
         locale={locale}
         country={country}
         currency={currency}
       />
-    </div>
+    </main>
   );
 }

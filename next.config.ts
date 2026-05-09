@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
     qualities: [25, 50, 75, 85, 100],
     dangerouslyAllowLocalIP: true, 
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+images: {
+    qualities: [25, 50, 75, 85, 100],
+    dangerouslyAllowLocalIP: true, 
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
@@ -59,9 +63,18 @@ const nextConfig: NextConfig = {
         pathname: "/rails/active_storage/**",
       },
       {
-        // 2. FIXED: Allow images from your new Rails backend subdomain
         protocol: "https",
         hostname: "admin.thewallx.com",
+        pathname: "/rails/active_storage/**",
+      },
+      {
+        protocol: "https",
+        hostname: "thewallx.com",
+        pathname: "/rails/active_storage/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.thewallx.com",
         pathname: "/rails/active_storage/**",
       },
     ],

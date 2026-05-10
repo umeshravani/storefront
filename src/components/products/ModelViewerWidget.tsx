@@ -80,65 +80,80 @@ export default function ModelViewerWidget({ config }: ModelViewerWidgetProps) {
         const viewer = viewerRef.current;
         if (!viewer) return;
 
+        // Reset loading state if config/model changes
+        setIsLoaded(false);
+
         const applyMaterials = async () => {
             if (!viewer.model) return;
 
-            for (const mat of config.materials) {
+            // 1. FAST SYNC PASS: Apply all colors and factors instantly to avoid race conditions
+            config.materials.forEach(mat => {
                 const materialInstance = viewer.model.getMaterialByName(mat.meshName);
-                if (!materialInstance) continue;
+                if (!materialInstance) return;
 
-                // 1. Base Color & Texture
-                if (mat.baseColor) {
-                    materialInstance.pbrMetallicRoughness.setBaseColorFactor(mat.baseColor);
+                try {
+                    if (mat.baseColor) materialInstance.pbrMetallicRoughness.setBaseColorFactor(mat.baseColor);
+                    if (mat.metalness !== undefined && mat.metalness !== null) materialInstance.pbrMetallicRoughness.setMetallicFactor(mat.metalness);
+                    if (mat.roughness !== undefined && mat.roughness !== null) materialInstance.pbrMetallicRoughness.setRoughnessFactor(mat.roughness);
+                    if (mat.emissiveColor) materialInstance.emissiveFactor = mat.emissiveColor;
+                } catch (e) {
+                    console.warn(`[ModelViewer] Error setting properties for ${mat.meshName}:`, e);
                 }
-                if (mat.baseTextureUrl) {
+            });
+
+            // 2. ASYNC PASS: Fetch and apply all textures in parallel
+            const texturePromises = config.materials.map(async (mat) => {
+                const materialInstance = viewer.model.getMaterialByName(mat.meshName);
+                if (!materialInstance) return;
+
+                // Explicitly declare 'color' (sRGB) or 'data' (Linear) for AR compatibility
+                const applyTex = async (url: string, targetMap: any, type: 'color' | 'data' = 'color') => {
                     try {
-                        const texture = await viewer.createTexture(mat.baseTextureUrl);
-                        materialInstance.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
-                    } catch (e) { console.error("Failed to load base texture", e); }
-                }
+                        if (!targetMap) return;
+                        const tex = await viewer.createTexture(url, type);
+                        targetMap.setTexture(tex);
+                    } catch (e) {
+                        console.warn(`[ModelViewer] Failed to load texture for ${mat.meshName}:`, e);
+                    }
+                };
 
-                // 2. Metallic & Roughness
-                materialInstance.pbrMetallicRoughness.setMetallicFactor(mat.metalness);
-                materialInstance.pbrMetallicRoughness.setRoughnessFactor(mat.roughness);
-                if (mat.metallicRoughnessUrl) {
-                    try {
-                        const tex = await viewer.createTexture(mat.metallicRoughnessUrl);
-                        materialInstance.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(tex);
-                    } catch (e) { console.error("Failed to load metallic-roughness texture", e); }
-                }
+                const tasks = [];
 
-                // 3. Normal Map
-                if (mat.normalTextureUrl) {
-                    try {
-                        const tex = await viewer.createTexture(mat.normalTextureUrl);
-                        materialInstance.normalTexture.setTexture(tex);
-                    } catch (e) { console.error("Failed to load normal texture", e); }
-                }
+                // Base Color & Emissive are standard sRGB visuals ('color')
+                if (mat.baseTextureUrl) tasks.push(applyTex(mat.baseTextureUrl, materialInstance.pbrMetallicRoughness.baseColorTexture, 'color'));
 
-                // 4. Emissive (Glowing parts)
-                if (mat.emissiveColor) {
-                    materialInstance.emissiveFactor = mat.emissiveColor;
-                }
                 if (mat.emissiveTextureUrl) {
-                    try {
-                        const tex = await viewer.createTexture(mat.emissiveTextureUrl);
-                        materialInstance.emissiveTexture.setTexture(tex);
-                    } catch (e) { console.error("Failed to load emissive texture", e); }
+                    tasks.push(applyTex(mat.emissiveTextureUrl, materialInstance.emissiveTexture, 'color'));
+                    // Force the base factor to white so the glow map isn't multiplied by black (invisible)
+                    materialInstance.emissiveFactor = [1, 1, 1];
                 }
 
-                // 5. Occlusion Map
-                if (mat.occlusionTextureUrl) {
-                    try {
-                        const tex = await viewer.createTexture(mat.occlusionTextureUrl);
-                        materialInstance.occlusionTexture.setTexture(tex);
-                    } catch (e) { console.error("Failed to load occlusion texture", e); }
+                // Normal & Occlusion must be mathematical data vectors ('data')
+                if (mat.normalTextureUrl) tasks.push(applyTex(mat.normalTextureUrl, materialInstance.normalTexture, 'data'));
+                if (mat.occlusionTextureUrl) tasks.push(applyTex(mat.occlusionTextureUrl, materialInstance.occlusionTexture, 'data'));
+
+                // ORM (Occlusion/Roughness/Metalness) must be mathematical data vectors ('data')
+                if (mat.metallicRoughnessUrl) {
+                    tasks.push(applyTex(mat.metallicRoughnessUrl, materialInstance.pbrMetallicRoughness.metallicRoughnessTexture, 'data'));
+                    // Force the base factors to 1.0 so they don't multiply/erase the map data
+                    materialInstance.pbrMetallicRoughness.setMetallicFactor(1.0);
+                    materialInstance.pbrMetallicRoughness.setRoughnessFactor(1.0);
                 }
-            }
+
+                await Promise.all(tasks);
+            });
+
+            await Promise.all(texturePromises);
             setIsLoaded(true);
         };
 
-        viewer.addEventListener("load", applyMaterials);
+        // Cache bypass: Fire immediately if model is already loaded, otherwise wait for event
+        if (viewer.model) {
+            applyMaterials();
+        } else {
+            viewer.addEventListener("load", applyMaterials);
+        }
+
         return () => viewer.removeEventListener("load", applyMaterials);
     }, [config]);
 

@@ -5,6 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   allowedDevOrigins: ["shop.lvh.me", "*.trycloudflare.com", "192.168.33.13"],
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
@@ -71,6 +72,29 @@ const nextConfig: NextConfig = {
         pathname: "/rails/active_storage/**",
       },
     ],
+  },
+
+  redirects: async () => {
+    return [
+      {
+        // Redirect legacy Spree Taxons to Next.js Categories
+        source: '/t/:path*',
+        destination: '/in/en/c/:path*',
+        permanent: true, 
+      },
+      {
+        // Redirect legacy Products to Next.js Products
+        source: '/products/:slug',
+        destination: '/in/en/products/:slug',
+        permanent: true,
+      },
+      {
+        // Catch stray root sitemap requests and point them to Next.js chunks
+        source: '/sitemap.xml',
+        destination: '/sitemap/0.xml',
+        permanent: true,
+      }
+    ];
   },
 
   rewrites: async () => {

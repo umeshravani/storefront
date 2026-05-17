@@ -197,34 +197,15 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     }
 
     setLoading(true);
-    setCartError(null);
-    setIsLiveOutOfStock(false);
-
     try {
       await addItem(variantId, quantity);
-      trackAddToCart(product, selectedVariant, quantity, currency);
-    } catch (error: any) {
-      let errMsg =
-        typeof error === "string"
-          ? error
-          : error?.message || "Could not add item to cart.";
-      errMsg = errMsg
-        .replace(/^Failed to add item to cart:\s*/i, "")
-        .replace(/^"|"$/g, "");
-
-      setCartError(errMsg);
-
-      const lowerMsg = errMsg.toLowerCase();
-      if (
-        lowerMsg.includes("not available") ||
-        lowerMsg.includes("out of stock") ||
-        lowerMsg.includes("quantity")
-      ) {
-        setIsLiveOutOfStock(true);
-      }
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      return;
     } finally {
       setLoading(false);
     }
+    trackAddToCart(product, selectedVariant, quantity, currency);
   };
 
   return (

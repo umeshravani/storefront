@@ -89,7 +89,10 @@
     "removeItemLabel": "Remove {name}",
     "giftCard": "Gift card",
     "storeCredit": "Store credit",
-    "amountDue": "Amount due"
+    "amountDue": "Amount due",
+    "failedToAddItem": "Could not add this item to your cart. Please try again.",
+    "failedToUpdateItem": "Could not update your cart. Please try again.",
+    "failedToRemoveItem": "Could not remove this item from your cart. Please try again."
   },
   "products": {
     "allProducts": "All Products",
@@ -422,6 +425,8 @@
     "firstName": "First Name",
     "lastName": "Last Name",
     "emailAddress": "Email Address",
+    "currentPassword": "Current Password",
+    "currentPasswordHelp": "Confirm your current password to change your email address.",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "profileUpdated": "Profile updated successfully!",

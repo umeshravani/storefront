@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 const THEME = {
     // Buttons (Write a review, Add review)
@@ -245,6 +246,36 @@ export default function ProductReviews({
 
     return (
         <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 relative">
+            {/* --- GOOGLE SEARCH RICH SNIPPETS (JSON-LD) --- */}
+            {summary.totalCount > 0 && (
+                <JsonLd
+                    data={{
+                        "@context": "https://schema.org",
+                        "@type": "Product",
+                        "name": productName,
+                        "aggregateRating": {
+                            "@type": "AggregateRating",
+                            "ratingValue": summary.average.toString(),
+                            "reviewCount": summary.totalCount.toString(),
+                        },
+                        "review": reviews.map((r) => ({
+                            "@type": "Review",
+                            "reviewRating": {
+                                "@type": "Rating",
+                                "ratingValue": r.rating.toString(),
+                                "bestRating": "5",
+                            },
+                            "author": {
+                                "@type": "Person",
+                                "name": r.reviewer_name || "Anonymous",
+                            },
+                            "datePublished": new Date(r.created_at).toISOString().split('T')[0],
+                            "reviewBody": r.review,
+                            "name": r.title || "Review",
+                        })),
+                    }}
+                />
+            )}
             <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
 
                 <div className="flex items-center gap-2">

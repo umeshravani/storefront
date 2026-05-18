@@ -246,12 +246,15 @@ export default function ProductReviews({
 
     return (
         <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 relative">
-            {/* --- GOOGLE SEARCH RICH SNIPPETS (JSON-LD) --- */}
+{/* --- GOOGLE SEARCH RICH SNIPPETS (JSON-LD) --- */}
             {summary.totalCount > 0 && (
                 <JsonLd
                     data={{
                         "@context": "https://schema.org",
                         "@type": "Product",
+                        // --- FIX: Add @id and url so Google merges this with the SEO.ts schema ---
+                        "@id": `${process.env.NEXT_PUBLIC_STORE_URL || "https://thewallx.com"}${basePath}/products/${slug}#product`,
+                        "url": `${process.env.NEXT_PUBLIC_STORE_URL || "https://thewallx.com"}${basePath}/products/${slug}`,
                         "name": productName,
                         "aggregateRating": {
                             "@type": "AggregateRating",

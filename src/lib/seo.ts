@@ -34,6 +34,7 @@ export function buildProductJsonLd(
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${canonicalUrl}#product`,
     name: product.name,
     url: canonicalUrl,
   };
@@ -57,15 +58,72 @@ export function buildProductJsonLd(
     schema.image = imageUrls;
   }
 
+  // CALCULATE PRICE RANGE & ENHANCED OFFERS
   if (product.price?.amount && product.price?.currency) {
+    const defaultPrice = parseFloat(product.price.amount);
+    let lowPrice = defaultPrice;
+    let highPrice = defaultPrice;
+    let isPriceRange = false;
+
+    // If product has variants, calculate the min and max prices
+    if (product.variants && product.variants.length > 0) {
+      const variantPrices = product.variants
+        .map((v: any) => parseFloat(v.price?.amount || "0"))
+        .filter((p: number) => p > 0);
+
+      if (variantPrices.length > 0) {
+        lowPrice = Math.min(...variantPrices, defaultPrice);
+        highPrice = Math.max(...variantPrices, defaultPrice);
+        isPriceRange = lowPrice !== highPrice;
+      }
+    }
+
     schema.offers = {
-      "@type": "Offer",
-      url: canonicalUrl,
+      "@type": isPriceRange ? "AggregateOffer" : "Offer",
       priceCurrency: product.price.currency,
-      price: product.price.amount,
+      ...(isPriceRange
+        ? { lowPrice: lowPrice.toFixed(2), highPrice: highPrice.toFixed(2) }
+        : { price: lowPrice.toFixed(2) }),
       availability: product.in_stock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
+      url: canonicalUrl,
+      itemCondition: "https://schema.org/NewCondition",
+
+      // 7-DAY RETURNS SCHEMA
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "IN",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: "7",
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn"
+      },
+
+      // FREE DELIVERY SCHEMA
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: product.price.currency
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d" // "d" stands for days
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 1,
+            maxValue: 5,
+            unitCode: "d"
+          }
+        }
+      }
     };
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag, Trash, X } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Trash, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -94,7 +94,7 @@ export function CartDrawer() {
       >
         <SheetHeader className="flex flex-row gap-2 items-center justify-between border-b">
           <SheetTitle className="flex flex-row gap-2 items-center">
-            <ShoppingBag className="w-6 h-6 text-gray-600" />
+            <ShoppingCart className="w-6 h-6 text-gray-600" />
             <span>{t("cart")}</span>
             {itemCount > 0 && (
               <span className="text-gray-600">

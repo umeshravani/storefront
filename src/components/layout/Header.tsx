@@ -6,9 +6,9 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { CartButton } from "@/components/layout/CartButton";
 import { SearchToggle } from "@/components/layout/SearchToggle";
+import { DesktopMenu } from "@/components/layout/DesktopMenu";
 import { Button } from "@/components/ui/button";
 import { getStoreName } from "@/lib/store";
-import logo from "../../../public/wallx.svg";
 
 const LazyMobileMenu = dynamic(
   () =>
@@ -41,7 +41,7 @@ const storeName = getStoreName();
 interface HeaderProps {
   rootCategories: Category[];
   basePath: string;
-  locale: Locale;
+  locale: any;
 }
 
 export async function Header({
@@ -55,20 +55,48 @@ export async function Header({
     <SearchToggle
       basePath={basePath}
       left={
-        <LazyMobileMenu rootCategories={rootCategories} basePath={basePath} />
+        <div className="flex items-center gap-2">
+          {/* Mobile hamburger (Hidden on Desktop) */}
+          <div className="lg:hidden">
+            <LazyMobileMenu rootCategories={rootCategories} basePath={basePath} />
+          </div>
+
+          {/* Desktop Logo (Hidden on Mobile, shifted left to match reference image) */}
+          <Link href={basePath || "/"} className="hidden lg:flex items-center min-w-0">
+            <Image
+              src="/wallx.svg"
+              alt={storeName}
+              width={90}
+              height={32}
+              className="object-contain w-[90px] h-auto"
+              fetchPriority="high"
+              loading="eager"
+            />
+          </Link>
+        </div>
       }
       center={
-        <Link href={basePath || "/"} className="flex items-center min-w-0">
-          <Image
-            src="/wallx.svg"
-            alt={storeName}
-            width={90}
-            height={32}
-            className="object-contain w-[90px] h-auto"
-            fetchPriority="high"
-            loading="eager"
+        <>
+          {/* Mobile Logo (Centered on mobile, hidden on desktop) */}
+          <Link href={basePath || "/"} className="lg:hidden flex items-center min-w-0">
+            <Image
+              src="/wallx.svg"
+              alt={storeName}
+              width={90}
+              height={32}
+              className="object-contain w-[90px] h-auto"
+              fetchPriority="high"
+              loading="eager"
+            />
+          </Link>
+
+          {/* The New Desktop Inline Menu */}
+          <DesktopMenu
+            rootCategories={rootCategories}
+            basePath={basePath}
+            locale={locale}
           />
-        </Link>
+        </>
       }
       rightStart={
         <div className="hidden lg:block">
@@ -76,19 +104,18 @@ export async function Header({
         </div>
       }
       rightEnd={
-        <>
-          {/* Account - desktop only */}
-          <div className="hidden md:block">
-            <Button variant="ghost" size="icon-lg" asChild>
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Account - Desktop Only (Reverted to standard icon) */}
+          <div className="hidden lg:block">
+            <Button variant="ghost" size="icon-lg" asChild className="rounded-full">
               <Link href={`${basePath}/account`} aria-label={t("account")}>
                 <UserRound className="size-5" />
               </Link>
             </Button>
           </div>
 
-          {/* Cart */}
           <CartButton />
-        </>
+        </div>
       }
     />
   );

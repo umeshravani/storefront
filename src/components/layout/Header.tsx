@@ -1,5 +1,5 @@
 import type { Category } from "@spree/sdk";
-import { User } from "lucide-react";
+import { UserRound } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -81,7 +81,7 @@ export async function Header({
           <div className="hidden md:block">
             <Button variant="ghost" size="icon-lg" asChild>
               <Link href={`${basePath}/account`} aria-label={t("account")}>
-                <User className="size-5" />
+                <UserRound className="size-5" />
               </Link>
             </Button>
           </div>

@@ -2,13 +2,11 @@ import type { Category } from "@spree/sdk";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-// IMPORT YOUR LOCALE TYPE (Adjust the path if your types are stored elsewhere)
-import type { Locale } from "@/i18n/routing"; 
 
 interface DesktopMenuProps {
   rootCategories: Category[];
   basePath: string;
-  locale: Locale; // <-- CHANGED from string to Locale
+  locale: any; 
 }
 
 export async function DesktopMenu({ rootCategories, basePath, locale }: DesktopMenuProps) {

@@ -4,6 +4,8 @@ import { HeroSection } from "@/components/home/HeroSection";
 // 1. Import your two new custom components
 import { IconBox } from "@/components/home/IconBox";
 import { CategorySlider } from "@/components/home/CategorySlider";
+import { RichTextSection } from "@/components/home/RichTextSection";
+import { QuoteSection } from "@/components/home/QuoteSection";
 
 import { getMarkets, resolveCurrency } from "@/lib/data/markets";
 import { generateHomeMetadata } from "@/lib/metadata/home";
@@ -88,6 +90,9 @@ export default async function HomePage({ params }: HomePageProps) {
       {/* 3. Your new Horizontal Category Slider */}
       <CategorySlider />
 
+      {/* The new Rich Text Section */}
+      <RichTextSection basePath={basePath} />
+
       {/* Spree's native Featured Products Section */}
       <FeaturedProductsSection
         basePath={basePath}
@@ -95,6 +100,10 @@ export default async function HomePage({ params }: HomePageProps) {
         country={country}
         currency={currency}
       />
+
+      {/* Insert the Quote Section here */}
+      <QuoteSection basePath={basePath} />
+
     </main>
   );
 }

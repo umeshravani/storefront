@@ -208,8 +208,8 @@ function CheckoutPageContentInner({
 
       const countriesData = market
         ? await getMarketCountries(market.id).catch(() => ({
-            data: [] as Country[],
-          }))
+          data: [] as Country[],
+        }))
         : { data: [] as Country[] };
 
       if (!cartData) {
@@ -343,6 +343,7 @@ function CheckoutPageContentInner({
           ...(addressData.shipping_address_id && {
             shipping_address_id: addressData.shipping_address_id,
           }),
+          use_shipping: true // Explicitly instruct backend file to perform syncing operations
         });
 
         if (!updateResult.success) {
@@ -352,8 +353,12 @@ function CheckoutPageContentInner({
 
         if (updateResult.cart) {
           setCart(updateResult.cart);
+
+          // Force a router synchronization and clear layout definitions immediately
+          window.dispatchEvent(new Event("resize"));
+          routerRef.current.refresh();
         }
-      } catch {
+      } catch (error) {
         setError(tRef.current("generalError"));
       } finally {
         setSaving(false);
@@ -463,7 +468,7 @@ function CheckoutPageContentInner({
           if (!sessionResult.success) {
             setError(
               sessionResult.error ||
-                tRef.current("failedToCompletePaymentSession"),
+              tRef.current("failedToCompletePaymentSession"),
             );
             setProcessing(false);
             return;

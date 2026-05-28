@@ -24,7 +24,12 @@ export function RazorpayPaymentForm({
   onApproved,
 }: RazorpayPaymentFormProps) {
   const [error, setError] = useState<string | null>(null);
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+
+  // FIX: Check if Razorpay was already loaded on a previous mount.
+  // This prevents the component from infinitely waiting for a script onLoad event that already fired.
+  const [isScriptLoaded, setIsScriptLoaded] = useState(
+    typeof window !== "undefined" && !!(window as any).Razorpay
+  );
 
   // Extract necessary Razorpay keys from the Spree session data securely
   const clientKey = sessionData.client_key as string;

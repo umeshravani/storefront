@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { render } from "@react-email/render";
+import nodemailer from "nodemailer";
 import type { ReactElement } from "react";
 import { getStoreEmailFrom, isStoreEmailFromFallback } from "@/lib/store";
 
@@ -19,12 +20,13 @@ export async function sendEmail({
   react,
   from,
 }: SendEmailOptions) {
-  if (isDev || !process.env.RESEND_API_KEY) {
+  // Use the mock email generator in development or if SMTP isn't configured yet
+  if (isDev || !process.env.SMTP_USER) {
     await sendEmailDev({ to, subject, react, from });
     return;
   }
 
-  await sendEmailResend({ to, subject, react, from });
+  await sendEmailNodemailer({ to, subject, react, from });
 }
 
 /**
@@ -34,7 +36,6 @@ export async function sendEmail({
 async function sendEmailDev({ to, subject, react }: SendEmailOptions) {
   const html = await render(react);
 
-  // Write to .next/emails/ so it's gitignored and easy to find
   const dir = path.join(process.cwd(), ".next", "emails");
   fs.mkdirSync(dir, { recursive: true });
 
@@ -55,28 +56,48 @@ async function sendEmailDev({ to, subject, react }: SendEmailOptions) {
 }
 
 /**
- * Production: send via Resend API.
+ * Production: send via Google Workspace / Nodemailer.
  */
-async function sendEmailResend({ to, subject, react, from }: SendEmailOptions) {
-  const { Resend } = await import("resend");
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const fromAddress = from || getStoreEmailFrom();
+async function sendEmailNodemailer({
+  to,
+  subject,
+  react,
+  from,
+}: SendEmailOptions) {
+  // 1. Convert the React Component into a raw HTML string
+  const html = await render(react);
+
+  const fromAddress = from || process.env.EMAIL_FROM || getStoreEmailFrom();
 
   if (!from && isStoreEmailFromFallback()) {
     console.warn(
-      "[email] EMAIL_FROM is not set — using fallback 'orders@example.com' which will likely be rejected by Resend",
+      "[email] EMAIL_FROM is not set — using fallback 'orders@example.com' which will likely bounce.",
     );
   }
 
-  const { error } = await resend.emails.send({
-    from: fromAddress,
-    to,
-    subject,
-    react,
+  // 2. Configure the Nodemailer Transporter
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || "smtp.gmail.com",
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: true, // true for port 465
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
   });
 
-  if (error) {
+  // 3. Send the email
+  try {
+    const info = await transporter.sendMail({
+      from: fromAddress,
+      to,
+      subject,
+      html, // Provide the rendered React HTML here
+    });
+
+    console.log("[email] Sent successfully:", info.messageId);
+  } catch (error) {
     console.error("[email] Failed to send:", error);
-    throw new Error(`Failed to send email: ${error.message}`);
+    throw new Error(`Failed to send email: ${(error as Error).message}`);
   }
 }

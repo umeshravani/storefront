@@ -58,7 +58,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "app.thewallx.com",
+        hostname: "server.thewallx.com",
         pathname: "/rails/active_storage/**",
       },
       {

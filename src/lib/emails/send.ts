@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ReactElement } from "react";
 import { render } from "react-email";
+import nodemailer from "nodemailer";
 import { getStoreEmailFrom, isStoreEmailFromFallback } from "@/lib/store";
 
 interface SendEmailOptions {

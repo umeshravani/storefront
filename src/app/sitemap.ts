@@ -12,6 +12,7 @@ type CategoryWithTimestamp = Category & {
 };
 
 import type { MetadataRoute } from "next";
+import { cache } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -64,45 +65,17 @@ function localeCacheKey(locale: string, country: string): string {
   return `${locale}:${country}`;
 }
 
-function getCachedProducts(
-  localeOpts: LocaleOptions,
-): Promise<ProductWithMedia[]> {
-  const key = localeCacheKey(localeOpts.locale, localeOpts.country);
-  let cached = cachedProductsByLocale.get(key);
-  if (!cached) {
-    cached = fetchAllProducts(localeOpts).catch((err) => {
-      cachedProductsByLocale.delete(key);
-      throw err;
-    });
-    cachedProductsByLocale.set(key, cached);
-  }
-  return cached;
-}
+const getCachedProducts = cache(async (localeOpts: LocaleOptions) => {
+  return fetchAllProducts(localeOpts);
+});
 
-function getCachedCategories(
-  localeOpts: LocaleOptions,
-): Promise<CategoryWithTimestamp[]> {
-  const key = localeCacheKey(localeOpts.locale, localeOpts.country);
-  let cached = cachedCategoriesByLocale.get(key);
-  if (!cached) {
-    cached = fetchAllCategories(localeOpts).catch((err) => {
-      cachedCategoriesByLocale.delete(key);
-      throw err;
-    });
-    cachedCategoriesByLocale.set(key, cached);
-  }
-  return cached;
-}
+const getCachedCategories = cache(async (localeOpts: LocaleOptions) => {
+  return fetchAllCategories(localeOpts);
+});
 
-function getCachedCountryLocales(): Promise<CountryLocale[]> {
-  if (!cachedCountryLocales) {
-    cachedCountryLocales = resolveCountryLocales().catch((err) => {
-      cachedCountryLocales = null;
-      throw err;
-    });
-  }
-  return cachedCountryLocales;
-}
+const getCachedCountryLocales = cache(async () => {
+  return resolveCountryLocales();
+});
 
 /**
  * Splits the sitemap into multiple files when the total URL count

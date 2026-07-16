@@ -5,7 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  //output: "standalone",
   allowedDevOrigins: ["shop.lvh.me", "*.trycloudflare.com", "192.168.33.13"],
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
@@ -41,6 +41,18 @@ const nextConfig: NextConfig = {
         hostname: "localhost",
         pathname: "/rails/active_storage/**",
       },
+      // 👇 Add your new API Subdomains here 👇
+      {
+        protocol: "https",
+        hostname: "server.thewallx.com",
+        pathname: "/rails/active_storage/**",
+      },
+      {
+        protocol: "https",
+        hostname: "server.artolika.com",
+        pathname: "/rails/active_storage/**",
+      },
+      // ----------------------------------------
       {
         protocol: "https",
         hostname: "**.vendo.dev",
@@ -54,11 +66,6 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "**.trycloudflare.com",
-        pathname: "/rails/active_storage/**",
-      },
-      {
-        protocol: "https",
-        hostname: "app.thewallx.com",
         pathname: "/rails/active_storage/**",
       },
       {
@@ -80,7 +87,7 @@ const nextConfig: NextConfig = {
         // Redirect legacy Spree Taxons to Next.js Categories
         source: '/t/:path*',
         destination: '/in/en/c/:path*',
-        permanent: true, 
+        permanent: true,
       },
       {
         // Redirect legacy Products to Next.js Products
@@ -123,14 +130,14 @@ const configWithIntl = withNextIntl(nextConfig);
 
 export default process.env.SENTRY_DSN
   ? withSentryConfig(configWithIntl, {
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      silent: !process.env.CI,
-      widenClientFileUpload: true,
-      sourcemaps: {
-        deleteSourcemapsAfterUpload: true,
-      },
-      telemetry: false,
-    })
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: !process.env.CI,
+    widenClientFileUpload: true,
+    sourcemaps: {
+      deleteSourcemapsAfterUpload: true,
+    },
+    telemetry: false,
+  })
   : configWithIntl;

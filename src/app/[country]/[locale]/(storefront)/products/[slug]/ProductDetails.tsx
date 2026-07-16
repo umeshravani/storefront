@@ -1,7 +1,14 @@
 "use client";
 
 import type { Media, Product, Variant } from "@spree/sdk";
-import { Box, CircleX, Loader2, ShoppingBag } from "lucide-react";
+import {
+  ChevronDown,
+  CircleX,
+  GalleryThumbnails,
+  Loader2,
+  Rotate3D,
+  ShoppingCart,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -232,6 +239,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 size="sm"
                 onClick={() => setViewMode("gallery")}
               >
+                <GalleryThumbnails className="w-4 h-4" />
                 Product Images
               </Button>
               <Button
@@ -240,8 +248,8 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 onClick={() => setViewMode("3d")}
                 className="gap-2"
               >
-                <Box className="w-4 h-4" />
-                3D
+                <Rotate3D className="w-4 h-4" />
+                3D View
               </Button>
             </div>
           )}
@@ -268,12 +276,23 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 ({reviewSummary.average})
               </p>
               <button
-                onClick={() =>
-                  window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: "smooth",
-                  })
-                }
+                onClick={() => {
+                  const reviewsSection =
+                    document.getElementById("reviews") ||
+                    document.querySelector("section.antialiased");
+                  if (reviewsSection) {
+                    const y =
+                      reviewsSection.getBoundingClientRect().top +
+                      window.scrollY -
+                      80; // 80px offset for sticky header
+                    window.scrollTo({ top: y, behavior: "smooth" });
+                  } else {
+                    window.scrollTo({
+                      top: document.body.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }
+                }}
                 className="text-sm font-medium leading-none text-gray-900 hover:underline"
               >
                 {reviewSummary.totalCount}{" "}
@@ -356,9 +375,10 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             </div>
           )}
 
-          {/* Quantity & Add to Cart */}
-          <div className="mt-6">
-            <div className="flex gap-4">
+          {/* Action Buttons (Quantity, Add to Cart, AR) */}
+          <div className="mt-6 flex flex-col md:flex-row gap-4">
+            {/* Quantity & Add to Cart */}
+            <div className="flex gap-4 w-full md:w-auto shrink-0">
               <QuantityPicker
                 quantity={quantity}
                 onDecrement={() => setQuantity(Math.max(1, quantity - 1))}
@@ -370,6 +390,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={loading || !displayPurchasable}
+                className="flex-1 md:flex-none"
               >
                 {loading ? (
                   <>
@@ -378,7 +399,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                   </>
                 ) : displayPurchasable ? (
                   <>
-                    <ShoppingBag className="w-5 h-5" />
+                    <ShoppingCart className="w-5 h-5" />
                     {t("addToCart")}
                   </>
                 ) : (
@@ -386,15 +407,13 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 )}
               </Button>
             </div>
-          </div>
 
-          {/* VIEW IN SPACE (AR) BUTTON */}
-          {base3DModelUrl && (
-            <div className="mt-4">
+            {/* VIEW IN SPACE (AR) BUTTON */}
+            {base3DModelUrl && (
               <Button
                 variant="default"
                 size="lg"
-                className="w-full gap-2 text-white hover:bg-black"
+                className="w-full md:w-auto gap-2 text-white hover:bg-black shrink-0"
                 onClick={() => {
                   setViewMode("3d");
                   setTimeout(() => {
@@ -407,11 +426,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                   }, 100);
                 }}
               >
-                <Box className="w-5 h-5" />
+                <Rotate3D className="w-5 h-5" />
                 View in your space
               </Button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* 
   {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (
@@ -427,14 +446,24 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
           {/* Description */}
           {product.description && (
-            <div className="mt-10 border-t pt-8">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                {t("description")}
-              </h2>
-              <div
-                className="text-gray-600 prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
+            <div className="mt-10 border-t border-gray-200">
+              <details className="group [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between py-6 text-gray-900 outline-none">
+                  <h2 className="text-lg font-medium">{t("description")}</h2>
+                  <span className="ml-6 flex h-7 items-center">
+                    <ChevronDown
+                      className="h-5 w-5 transition-transform duration-300 group-open:-rotate-180"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </summary>
+                <div className="pb-6">
+                  <div
+                    className="text-gray-600 prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                </div>
+              </details>
             </div>
           )}
 
@@ -449,7 +478,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 return (
                   <div
                     key={field.id}
-                    className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6"
                   >
                     {features.map((feat: any, idx: number) => (
                       <div
@@ -480,28 +509,40 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           <ProductCustomFields customFields={product.custom_fields} />
 
           {/* Product Details */}
-          <div className="mt-8 border-t pt-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              {t("details")}
-            </h2>
-            <dl className="space-y-3">
-              {selectedVariant?.sku && (
-                <div className="flex">
-                  <dt className="w-32 text-gray-500 text-sm">{t("sku")}</dt>
-                  <dd className="text-gray-900 text-sm">
-                    {selectedVariant.sku}
-                  </dd>
-                </div>
-              )}
-              {selectedVariant?.options_text && (
-                <div className="flex">
-                  <dt className="w-32 text-gray-500 text-sm">{t("options")}</dt>
-                  <dd className="text-gray-900 text-sm">
-                    {selectedVariant.options_text}
-                  </dd>
-                </div>
-              )}
-            </dl>
+          <div className="border-t border-gray-200">
+            <details className="group [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer items-center justify-between py-6 text-gray-900 outline-none">
+                <h2 className="text-lg font-medium">{t("details")}</h2>
+                <span className="ml-6 flex h-7 items-center">
+                  <ChevronDown
+                    className="h-5 w-5 transition-transform duration-300 group-open:-rotate-180"
+                    aria-hidden="true"
+                  />
+                </span>
+              </summary>
+              <div className="pb-6">
+                <dl className="space-y-3">
+                  {selectedVariant?.sku && (
+                    <div className="flex">
+                      <dt className="w-32 text-gray-500 text-sm">{t("sku")}</dt>
+                      <dd className="text-gray-900 text-sm">
+                        {selectedVariant.sku}
+                      </dd>
+                    </div>
+                  )}
+                  {selectedVariant?.options_text && (
+                    <div className="flex">
+                      <dt className="w-32 text-gray-500 text-sm">
+                        {t("options")}
+                      </dt>
+                      <dd className="text-gray-900 text-sm">
+                        {selectedVariant.options_text}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            </details>
           </div>
         </div>
       </div>

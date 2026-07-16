@@ -24,9 +24,17 @@ vi.mock("@/lib/spree", () => ({
       return fn({ token: "jwt-token" });
     },
   ),
+  ensureFreshSession: vi.fn().mockResolvedValue("valid"),
+  isAuthError: (error: unknown) =>
+    !!error &&
+    typeof error === "object" &&
+    "status" in error &&
+    ((error as { status?: number }).status === 401 ||
+      (error as { status?: number }).status === 403),
   getAccessToken: vi.fn().mockResolvedValue("jwt-token"),
   setAccessToken: vi.fn(),
   clearAccessToken: vi.fn(),
+  clearAuthCookies: vi.fn(),
   getRefreshToken: vi.fn().mockResolvedValue(undefined),
   setRefreshToken: vi.fn(),
   clearRefreshToken: vi.fn(),
@@ -59,6 +67,7 @@ import {
   login,
   logout,
   register,
+  syncSession,
   updateCustomer,
 } from "@/lib/data/customer";
 
@@ -99,11 +108,8 @@ describe("customer server actions", () => {
       const result = await getCustomer();
 
       expect(result).toBeNull();
-      const { clearAccessToken, clearRefreshToken } = await import(
-        "@/lib/spree"
-      );
-      expect(clearAccessToken).toHaveBeenCalled();
-      expect(clearRefreshToken).toHaveBeenCalled();
+      const { clearAuthCookies } = await import("@/lib/spree");
+      expect(clearAuthCookies).toHaveBeenCalled();
     });
 
     it("does not clear tokens on transient errors", async () => {
@@ -115,11 +121,134 @@ describe("customer server actions", () => {
       const result = await getCustomer();
 
       expect(result).toBeNull();
-      const { clearAccessToken, clearRefreshToken } = await import(
+      const { clearAuthCookies } = await import("@/lib/spree");
+      expect(clearAuthCookies).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("syncSession", () => {
+    it("returns the customer without a refresh flag for a live session", async () => {
+      const { ensureFreshSession } = await import("@/lib/spree");
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "valid",
+      );
+      mockClient.customer.get.mockResolvedValue(mockUser);
+
+      const result = await syncSession();
+
+      expect(result).toEqual({ customer: mockUser, refreshed: false });
+    });
+
+    it("flags a transparent refresh so the client can re-render", async () => {
+      const { ensureFreshSession } = await import("@/lib/spree");
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "refreshed",
+      );
+      mockClient.customer.get.mockResolvedValue(mockUser);
+
+      const result = await syncSession();
+
+      expect(result).toEqual({ customer: mockUser, refreshed: true });
+    });
+
+    it("reports no customer for an expired session and skips the fetch", async () => {
+      const { ensureFreshSession } = await import("@/lib/spree");
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "expired",
+      );
+
+      const result = await syncSession();
+
+      expect(result).toEqual({ customer: null, refreshed: false });
+      expect(mockClient.customer.get).not.toHaveBeenCalled();
+    });
+
+    it("reports no customer when anonymous", async () => {
+      const { ensureFreshSession } = await import("@/lib/spree");
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "anonymous",
+      );
+
+      const result = await syncSession();
+
+      expect(result).toEqual({ customer: null, refreshed: false });
+      expect(mockClient.customer.get).not.toHaveBeenCalled();
+    });
+
+    it("marks the session stale on a transient fetch failure, preserving it", async () => {
+      const { ensureFreshSession, clearAuthCookies } = await import(
         "@/lib/spree"
       );
-      expect(clearAccessToken).not.toHaveBeenCalled();
-      expect(clearRefreshToken).not.toHaveBeenCalled();
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "valid",
+      );
+      mockClient.customer.get.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await syncSession();
+
+      expect(result).toEqual({
+        customer: null,
+        refreshed: false,
+        stale: true,
+      });
+      // A transient failure must not clear the session.
+      expect(clearAuthCookies).not.toHaveBeenCalled();
+    });
+
+    it("preserves the session without fetching when the refresh is transiently stale", async () => {
+      const { ensureFreshSession, clearAuthCookies } = await import(
+        "@/lib/spree"
+      );
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "stale",
+      );
+
+      const result = await syncSession();
+
+      expect(result).toEqual({
+        customer: null,
+        refreshed: false,
+        stale: true,
+      });
+      expect(mockClient.customer.get).not.toHaveBeenCalled();
+      expect(clearAuthCookies).not.toHaveBeenCalled();
+    });
+
+    it("keeps the refresh signal when a rotation is followed by a transient fetch failure", async () => {
+      const { ensureFreshSession } = await import("@/lib/spree");
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "refreshed",
+      );
+      mockClient.customer.get.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await syncSession();
+
+      expect(result).toEqual({
+        customer: null,
+        refreshed: true,
+        stale: true,
+      });
+    });
+
+    it("logs out (no stale flag) when the fetch returns an auth error", async () => {
+      const { SpreeError } = await import("@spree/sdk");
+      const { ensureFreshSession, clearAuthCookies } = await import(
+        "@/lib/spree"
+      );
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "valid",
+      );
+      mockClient.customer.get.mockRejectedValueOnce(
+        new SpreeError(
+          { error: { code: "unauthorized", message: "Unauthorized" } },
+          401,
+        ),
+      );
+
+      const result = await syncSession();
+
+      expect(result).toEqual({ customer: null, refreshed: false });
+      expect(clearAuthCookies).toHaveBeenCalled();
     });
   });
 

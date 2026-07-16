@@ -95,7 +95,13 @@ export function AddressSection({
       ? initialSavedAddresses[0]
       : undefined;
 
-  const [email, setEmail] = useState(cart.email || "");
+  const [email, setEmail] = useState(cart.email || user?.email || "");
+  // Lock the email field only once the account email is actually loaded. The
+  // server-derived `isAuthenticated` can be true while the AuthContext `user` is
+  // still null — during hydration, or after a transient sync is preserved as
+  // `stale` — so keying off `isAuthenticated` alone would leave the field
+  // disabled and blank, blocking checkout. Gate on the account email instead.
+  const hasAccountEmail = isAuthenticated && !!user?.email;
   const defaultCountryIso = countries[0]?.iso ?? "";
 
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() => {
@@ -274,10 +280,10 @@ export function AddressSection({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onBlur={handleEmailBlur}
-          disabled={isAuthenticated}
+          disabled={hasAccountEmail}
           placeholder={t("emailAddress")}
         />
-        {isAuthenticated && (
+        {hasAccountEmail && (
           <p className="text-xs text-gray-500 mt-1.5">
             {t("usingAccountEmail")}
           </p>

@@ -1,7 +1,11 @@
 import type { Category } from "@spree/sdk";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
+import { FeaturedProducts } from "@/components/products/FeaturedProducts";
+import ProductReviews from "@/components/products/ProductReviews";
+import { RecentlyViewed } from "@/components/products/RecentlyViewed";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCachedProduct, PRODUCT_PAGE_EXPAND } from "@/lib/data/cached";
 import { generateProductMetadata } from "@/lib/metadata/product";
@@ -12,8 +16,6 @@ import {
 } from "@/lib/seo";
 import { getStoreUrl } from "@/lib/store";
 import { ProductDetails } from "./ProductDetails";
-import ProductReviews from "@/components/products/ProductReviews";
-import { cookies } from "next/headers";
 
 interface ProductPageProps {
   params: Promise<{
@@ -72,9 +74,9 @@ export default async function ProductPage({
   const storeUrl = getStoreUrl();
   const canonicalUrl = storeUrl
     ? buildCanonicalUrl(
-      storeUrl,
-      `/${country}/${locale}/products/${product.slug}`,
-    )
+        storeUrl,
+        `/${country}/${locale}/products/${product.slug}`,
+      )
     : undefined;
 
   const breadcrumbCategory = findBreadcrumbCategory(
@@ -117,6 +119,24 @@ export default async function ProductPage({
         isLoggedIn={isLoggedIn}
         authToken={authToken}
       />
+
+      {/* Featured Products */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Featured Products
+          </h2>
+        </div>
+        {/* currency is optional, but you can pass it if you have it available in your layout */}
+        <FeaturedProducts
+          basePath={basePath}
+          locale={locale}
+          country={country}
+        />
+      </section>
+
+      {/* Recently Viewed */}
+      <RecentlyViewed currentProductSlug={product.slug} basePath={basePath} />
     </>
   );
 }

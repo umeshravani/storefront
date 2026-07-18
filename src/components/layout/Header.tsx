@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { CartButton } from "@/components/layout/CartButton";
-import { SearchToggle } from "@/components/layout/SearchToggle";
 import { DesktopMenu } from "@/components/layout/DesktopMenu";
+import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
 import { getStoreName } from "@/lib/store";
 
@@ -58,11 +58,17 @@ export async function Header({
         <div className="flex items-center gap-2">
           {/* Mobile hamburger (Hidden on Desktop) */}
           <div className="lg:hidden">
-            <LazyMobileMenu rootCategories={rootCategories} basePath={basePath} />
+            <LazyMobileMenu
+              rootCategories={rootCategories}
+              basePath={basePath}
+            />
           </div>
 
           {/* Desktop Logo (Hidden on Mobile, shifted left to match reference image) */}
-          <Link href={basePath || "/"} className="hidden lg:flex items-center min-w-0">
+          <Link
+            href={basePath || "/"}
+            className="hidden lg:flex items-center min-w-0"
+          >
             <Image
               src="/wallx.svg"
               alt={storeName}
@@ -78,7 +84,10 @@ export async function Header({
       center={
         <>
           {/* Mobile Logo (Centered on mobile, hidden on desktop) */}
-          <Link href={basePath || "/"} className="lg:hidden flex items-center min-w-0">
+          <Link
+            href={basePath || "/"}
+            className="lg:hidden flex items-center min-w-0"
+          >
             <Image
               src="/wallx.svg"
               alt={storeName}
@@ -107,7 +116,12 @@ export async function Header({
         <div className="flex items-center gap-2 md:gap-4">
           {/* Account - Desktop Only (Reverted to standard icon) */}
           <div className="hidden lg:block">
-            <Button variant="ghost" size="icon-lg" asChild className="rounded-full">
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              asChild
+              className="rounded-md"
+            >
               <Link href={`${basePath}/account`} aria-label={t("account")}>
                 <UserRound className="size-5" />
               </Link>

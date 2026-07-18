@@ -5,6 +5,8 @@ import { ZoomIn } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
+import { ShareButton } from "@/components/products/ShareButton";
+import { WishlistButton } from "@/components/products/WishlistButton";
 import { ProductImage } from "@/components/ui/product-image";
 
 const SWIPE_THRESHOLD_PX = 50;
@@ -33,6 +35,9 @@ const LazyMediaLightbox = dynamic(
 interface MediaGalleryProps {
   images: Media[];
   productName: string;
+  variantId: string | number;
+  basePath: string;
+  currentPath: string;
   activeIndex?: number | null;
 }
 
@@ -57,6 +62,9 @@ export function MediaGallery(props: MediaGalleryProps) {
 function MediaGalleryInner({
   images,
   productName,
+  variantId,
+  basePath,
+  currentPath,
   activeIndex,
 }: MediaGalleryProps) {
   const t = useTranslations("products");
@@ -131,46 +139,61 @@ function MediaGalleryInner({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Main Image */}
-      <button
-        type="button"
-        className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-zoom-in w-full touch-pan-y"
-        onClick={() => {
-          if (suppressClickRef.current) {
-            suppressClickRef.current = false;
-            return;
-          }
-          if (showMainImage) setIsZoomed(true);
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        aria-label={t("openImageZoom")}
-        disabled={!showMainImage}
-      >
-        <ProductImage
-          key={safeIndex}
-          src={mainImageUrl}
-          alt={selectedImage?.alt || productName}
-          fill
-          className="object-cover"
-          fetchPriority="high"
-          loading="eager"
-          priority
-          quality={85}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          placeholder="blur"
-          blurDataURL={BLUR_PLACEHOLDER}
-          iconClassName="w-24 h-24"
-          onError={() => mainImageUrl && setMainImageErrorUrl(mainImageUrl)}
-        />
-        {/* Zoom hint */}
-        {showMainImage && (
-          <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-sm text-gray-600 flex items-center gap-1.5">
-            <ZoomIn className="w-4 h-4" />
-            {t("clickToZoom")}
+      {/* Main Image & Overlays Wrapper - This MUST be relative */}
+      <div className="relative w-full aspect-square bg-gray-100 rounded-xl overflow-hidden">
+        {/* Main Image Button (Fills the relative wrapper) */}
+        <button
+          type="button"
+          className="absolute inset-0 w-full h-full cursor-zoom-in touch-pan-y"
+          onClick={() => {
+            if (suppressClickRef.current) {
+              suppressClickRef.current = false;
+              return;
+            }
+            if (showMainImage) setIsZoomed(true);
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          aria-label={t("openImageZoom")}
+          disabled={!showMainImage}
+        >
+          <ProductImage
+            key={safeIndex}
+            src={mainImageUrl}
+            alt={selectedImage?.alt || productName}
+            fill
+            className="object-cover"
+            fetchPriority="high"
+            loading="eager"
+            priority
+            quality={85}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            placeholder="blur"
+            blurDataURL={BLUR_PLACEHOLDER}
+            iconClassName="w-24 h-24"
+            onError={() => mainImageUrl && setMainImageErrorUrl(mainImageUrl)}
+          />
+          {/* Zoom hint */}
+          {showMainImage && (
+            <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-sm text-gray-600 flex items-center gap-1.5 shadow-sm">
+              <ZoomIn className="w-4 h-4" />
+              {t("clickToZoom")}
+            </div>
+          )}
+        </button>
+
+        {/* Wishlist + Share overlay (Safely inside the relative wrapper with z-10) */}
+        {variantId && basePath && currentPath && (
+          <div className="absolute top-3 right-3 flex flex-col sm:flex-row gap-2 z-10">
+            <WishlistButton
+              variantId={variantId}
+              basePath={basePath}
+              currentPath={currentPath}
+            />
+            <ShareButton title={productName} />
           </div>
         )}
-      </button>
+      </div>
 
       {/* Thumbnails */}
       {images.length > 1 && (
@@ -184,7 +207,7 @@ function MediaGalleryInner({
                 onClick={() => selectImage(index)}
                 className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-colors bg-gray-100 ${
                   index === safeIndex
-                    ? "border-gray-600"
+                    ? "border-gray-900"
                     : "border-transparent hover:border-gray-300"
                 }`}
               >

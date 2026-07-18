@@ -228,6 +228,14 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               images={galleryImages}
               productName={product.name}
               activeIndex={variantImageIndex}
+              variantId={
+                selectedVariant?.id ||
+                product.default_variant?.id ||
+                product.default_variant_id ||
+                product.id
+              }
+              basePath={basePath}
+              currentPath={`${basePath}/products/${product.slug}`}
             />
           )}
 

@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   CreditCard,
   Gift,
+  Heart,
   Home,
   LogOut,
   MapPin,
@@ -26,6 +27,7 @@ function getNavItems(t: ReturnType<typeof useTranslations<"account">>): {
   return [
     { href: "/account", label: t("overview"), icon: Home },
     { href: "/account/orders", label: t("orders"), icon: ShoppingBag },
+    { href: "/account/wishlist", label: "Wishlist", icon: Heart }, // <-- Add this line
     { href: "/account/addresses", label: t("addresses"), icon: MapPin },
     {
       href: "/account/credit-cards",

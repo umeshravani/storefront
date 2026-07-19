@@ -14,12 +14,7 @@ export function RelatedProducts({ products, basePath }: RelatedProductsProps) {
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-900">You may also like</h2>
       </div>
-      <ProductCarousel
-        products={products}
-        basePath={basePath}
-        listId="related_products"
-        listName="Related Products"
-      />
+      <ProductCarousel products={products} basePath={basePath} />
     </section>
   );
 }

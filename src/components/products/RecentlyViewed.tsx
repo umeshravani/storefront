@@ -70,12 +70,7 @@ export function RecentlyViewed({
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Recently viewed</h2>
       </div>
-      <LazyProductCarousel
-        products={products}
-        basePath={basePath}
-        listId="recently_viewed"
-        listName="Recently Viewed"
-      />
+      <LazyProductCarousel products={products} basePath={basePath} />
     </section>
   );
 }

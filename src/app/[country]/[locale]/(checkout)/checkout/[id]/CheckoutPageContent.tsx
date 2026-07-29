@@ -208,8 +208,8 @@ function CheckoutPageContentInner({
 
       const countriesData = market
         ? await getMarketCountries(market.id).catch(() => ({
-          data: [] as Country[],
-        }))
+            data: [] as Country[],
+          }))
         : { data: [] as Country[] };
 
       if (!cartData) {
@@ -343,7 +343,7 @@ function CheckoutPageContentInner({
           ...(addressData.shipping_address_id && {
             shipping_address_id: addressData.shipping_address_id,
           }),
-          use_shipping: true // Explicitly instruct backend file to perform syncing operations
+          use_shipping: true, // Explicitly instruct backend file to perform syncing operations
         });
 
         if (!updateResult.success) {
@@ -468,7 +468,7 @@ function CheckoutPageContentInner({
           if (!sessionResult.success) {
             setError(
               sessionResult.error ||
-              tRef.current("failedToCompletePaymentSession"),
+                tRef.current("failedToCompletePaymentSession"),
             );
             setProcessing(false);
             return;
@@ -675,7 +675,7 @@ function CheckoutPageContentInner({
       )}
 
       {/* Express checkout for guests */}
-      {!isAuthenticated && parseFloat(cart.total) > 0 && (
+      {!isAuthenticated && parseFloat(cart.total ?? "0") > 0 && (
         <div className={expressAvailable ? "mb-4" : ""}>
           {expressAvailable && (
             <h2 className="text-lg font-bold text-gray-900 mb-3">

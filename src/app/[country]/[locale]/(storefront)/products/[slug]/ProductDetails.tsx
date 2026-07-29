@@ -3,21 +3,26 @@
 import type { Media, Product, Variant } from "@spree/sdk";
 import {
   ChevronDown,
+  CircleCheckBig,
   CircleX,
   GalleryThumbnails,
   Loader2,
   Rotate3D,
+  ShoppingBag,
   ShoppingCart,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
+import { HiddenPricePrompt } from "@/components/products/HiddenPricePrompt";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
-import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
+import { useHiddenPricing } from "@/contexts/HiddenPricingContext";
 import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart, trackViewItem } from "@/lib/analytics/gtm";
 
@@ -51,6 +56,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const { addItem } = useCart();
   const { currency } = useStore();
   const t = useTranslations("products");
+  const tw = useTranslations("wholesale");
+  // Non-null inside a HiddenPricingProvider (wholesale `prices_hidden`, guest
+  // view): prices are null on purpose, and ordering is gated behind sign-in.
+  const hiddenPricing = useHiddenPricing();
+  const pricesHidden = hiddenPricing !== null;
 
   // Reviews Summary State
   const [reviewSummary, setReviewSummary] = useState<{
@@ -178,6 +188,8 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
         ? originalPrice.display_amount
         : price?.display_compare_at_amount) ?? null)
     : null;
+
+  const sku = selectedVariant?.sku ?? product.default_variant?.sku;
 
   // INITIAL Cache Purchasability
   const initialPurchasable = hasVariants
@@ -311,10 +323,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
           {/* Price */}
           <div className="mt-4 mb-4 flex items-center gap-2">
-            {displayPrice && (
+            {displayPrice ? (
               <span className="text-xl font-bold text-gray-900">
                 {displayPrice}
               </span>
+            ) : (
+              <HiddenPricePrompt className="inline-flex items-center gap-1.5 text-base font-medium text-slate-600 underline underline-offset-4 hover:text-slate-900" />
             )}
             {onSale && strikethroughPrice && (
               <>
@@ -384,59 +398,70 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           )}
 
           {/* Action Buttons (Quantity, Add to Cart, AR) */}
-          <div className="mt-6 flex flex-col md:flex-row gap-4">
-            {/* Quantity & Add to Cart */}
-            <div className="flex gap-4 w-full md:w-auto shrink-0">
-              <QuantityPicker
-                quantity={quantity}
-                onDecrement={() => setQuantity(Math.max(1, quantity - 1))}
-                onIncrement={() => setQuantity(quantity + 1)}
-                size="lg"
-              />
+          <div className="mt-6">
+            {pricesHidden ? (
+              // Guest on a prices-hidden channel: no pricing, no ordering —
+              // route them through the wholesale sign-in first.
+              <Button asChild size="lg">
+                <Link href={hiddenPricing.signInHref}>
+                  {tw("hiddenPrice.signInToOrder")}
+                </Link>
+              </Button>
+            ) : (
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Quantity & Add to Cart */}
+                <div className="flex gap-4 w-full md:w-auto shrink-0">
+                  <QuantityPickerField
+                    quantity={quantity}
+                    onQuantityChange={setQuantity}
+                    size="lg"
+                  />
 
-              <Button
-                size="lg"
-                onClick={handleAddToCart}
-                disabled={loading || !displayPurchasable}
-                className="flex-1 md:flex-none"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin h-5 w-5" />
-                    {t("adding")}
-                  </>
-                ) : displayPurchasable ? (
-                  <>
-                    <ShoppingCart className="w-5 h-5" />
-                    {t("addToCart")}
-                  </>
-                ) : (
-                  t("outOfStock")
+                  <Button
+                    size="lg"
+                    onClick={handleAddToCart}
+                    disabled={loading || !displayPurchasable}
+                    className="flex-1 md:flex-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="animate-spin h-5 w-5" />
+                        {t("adding")}
+                      </>
+                    ) : displayPurchasable ? (
+                      <>
+                        <ShoppingCart className="w-5 h-5" />
+                        {t("addToCart")}
+                      </>
+                    ) : (
+                      t("outOfStock")
+                    )}
+                  </Button>
+                </div>
+
+                {/* VIEW IN SPACE (AR) BUTTON */}
+                {base3DModelUrl && (
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="w-full md:w-auto gap-2 text-white hover:bg-black shrink-0"
+                    onClick={() => {
+                      setViewMode("3d");
+                      setTimeout(() => {
+                        const viewer = document.querySelector(
+                          "model-viewer",
+                        ) as any;
+                        if (viewer && viewer.activateAR) {
+                          viewer.activateAR();
+                        }
+                      }, 100);
+                    }}
+                  >
+                    <Rotate3D className="w-5 h-5" />
+                    View in your space
+                  </Button>
                 )}
-              </Button>
-            </div>
-
-            {/* VIEW IN SPACE (AR) BUTTON */}
-            {base3DModelUrl && (
-              <Button
-                variant="default"
-                size="lg"
-                className="w-full md:w-auto gap-2 text-white hover:bg-black shrink-0"
-                onClick={() => {
-                  setViewMode("3d");
-                  setTimeout(() => {
-                    const viewer = document.querySelector(
-                      "model-viewer",
-                    ) as any;
-                    if (viewer && viewer.activateAR) {
-                      viewer.activateAR();
-                    }
-                  }, 100);
-                }}
-              >
-                <Rotate3D className="w-5 h-5" />
-                View in your space
-              </Button>
+              </div>
             )}
           </div>
 
@@ -453,7 +478,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 */}
 
           {/* Description */}
-          {product.description && (
+          {product.description_html && (
             <div className="mt-10 border-t border-gray-200">
               <details className="group [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex cursor-pointer items-center justify-between py-6 text-gray-900 outline-none">
@@ -466,9 +491,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                   </span>
                 </summary>
                 <div className="pb-6">
+                  {/* Description is admin-authored HTML from the Spree CMS backend (trusted source) */}
                   <div
                     className="text-gray-600 prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    dangerouslySetInnerHTML={{
+                      __html: product.description_html,
+                    }}
                   />
                 </div>
               </details>
@@ -530,12 +558,10 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               </summary>
               <div className="pb-6">
                 <dl className="space-y-3">
-                  {selectedVariant?.sku && (
+                  {sku && (
                     <div className="flex">
                       <dt className="w-32 text-gray-500 text-sm">{t("sku")}</dt>
-                      <dd className="text-gray-900 text-sm">
-                        {selectedVariant.sku}
-                      </dd>
+                      <dd className="text-gray-900 text-sm">{sku}</dd>
                     </div>
                   )}
                   {selectedVariant?.options_text && (

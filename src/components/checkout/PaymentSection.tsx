@@ -48,6 +48,7 @@ import { getCreditCards } from "@/lib/data/credit-cards";
 import {
   createCheckoutPaymentSession,
   createDirectPayment,
+  updateCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import {
   type AddressFormData,
@@ -112,9 +113,14 @@ export function PaymentSection({
     paymentMethods.find((pm) => pm.id === selectedMethodId) ??
     paymentMethods[0];
   const effectiveSelectedMethodId = selectedMethod?.id ?? "";
-  // Zero-amount check
-  const amountDue = parseFloat(cart.amount_due ?? cart.total);
-  const isZeroAmount = amountDue === 0;
+  // Zero-amount check. A null amount (money fields are nullable for
+  // prices-hidden guests) must NOT read as zero — that would complete
+  // checkout with no payment. Only a real numeric 0 is a free order;
+  // an unknown amount falls through to the normal payment path.
+  const rawAmountDue = cart.amount_due ?? cart.total;
+  const amountDue =
+    rawAmountDue == null ? Number.NaN : parseFloat(rawAmountDue);
+  const isZeroAmount = Number.isFinite(amountDue) && amountDue === 0;
 
   // Free orders are always treated as non-session (no payment needed)
   const isSessionBased =
@@ -256,17 +262,24 @@ export function PaymentSection({
     [cart.id, t],
   );
 
-  // FIX: Track a comprehensive fingerprint of the cart. 
-  // If the total OR the address OR the selected shipping rate changes, we MUST 
+  // FIX: Track a comprehensive fingerprint of the cart.
+  // If the total OR the address OR the selected shipping rate changes, we MUST
   // recreate the payment session because Spree invalidates previous sessions.
   const cartFingerprint = useMemo(() => {
     return [
       cart.total,
       cart.shipping_address?.id,
       cart.billing_address?.id,
-      cart.fulfillments?.map(f => f.delivery_rates?.find(r => r.selected)?.id).join(',')
-    ].join('|');
-  }, [cart.total, cart.shipping_address?.id, cart.billing_address?.id, cart.fulfillments]);
+      cart.fulfillments
+        ?.map((f) => f.delivery_rates?.find((r) => r.selected)?.id)
+        .join(","),
+    ].join("|");
+  }, [
+    cart.total,
+    cart.shipping_address?.id,
+    cart.billing_address?.id,
+    cart.fulfillments,
+  ]);
 
   const lastFingerprintRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
@@ -733,8 +746,9 @@ export function PaymentSection({
               {/* Method header row */}
               {hasMultipleMethods && (
                 <label
-                  className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors ${isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
-                    } ${index > 0 ? "border-t" : ""}`}
+                  className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
+                    isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                  } ${index > 0 ? "border-t" : ""}`}
                 >
                   <RadioGroupItem value={pm.id} />
                   <span className="text-sm font-medium text-gray-900">
@@ -784,11 +798,12 @@ export function PaymentSection({
                                 {savedCards.map((card, cardIndex) => (
                                   <label
                                     key={card.id}
-                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selectedCardId ===
+                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                                      selectedCardId ===
                                       card.gateway_payment_profile_id
-                                      ? "bg-white"
-                                      : "bg-white hover:bg-gray-50"
-                                      } ${cardIndex > 0 ? "border-t" : ""}`}
+                                        ? "bg-white"
+                                        : "bg-white hover:bg-gray-50"
+                                    } ${cardIndex > 0 ? "border-t" : ""}`}
                                   >
                                     <RadioGroupItem
                                       value={
@@ -826,10 +841,11 @@ export function PaymentSection({
 
                                 {/* Add new card */}
                                 <label
-                                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-t transition-colors ${isAddingNew
-                                    ? "bg-white"
-                                    : "bg-white hover:bg-gray-50"
-                                    }`}
+                                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-t transition-colors ${
+                                    isAddingNew
+                                      ? "bg-white"
+                                      : "bg-white hover:bg-gray-50"
+                                  }`}
                                 >
                                   <RadioGroupItem value="__new__" />
                                   <CreditCard
@@ -929,8 +945,8 @@ export function PaymentSection({
                               return ext ? (
                                 <div className="p-4">
                                   <RazorpayPaymentForm
-                                    // FIX: Appending paymentSessionId forces React to fully unmount 
-                                    // and remount the component when shipping rates change, 
+                                    // FIX: Appending paymentSessionId forces React to fully unmount
+                                    // and remount the component when shipping rates change,
                                     // guaranteeing that onReady fires and sets the Ref correctly.
                                     key={`${ext._external_id}-${paymentSessionId}`}
                                     sessionData={ext}

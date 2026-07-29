@@ -15,7 +15,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import type { ReactNode } from "react";
 import { POLICY_LINKS } from "@/lib/constants/policies";
+import { isWholesaleEnabled } from "@/lib/spree";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 import { CurrentYear } from "./CurrentYear";
 
@@ -23,18 +25,36 @@ const storeName = getStoreName();
 const storeDescription = getStoreDescription();
 
 interface FooterProps {
-  rootCategories: Category[];
   basePath: string;
-  locale: any;
+  locale: Locale;
+  categoryLinks: ReactNode;
 }
 
-export async function Footer({
+interface FooterCategoryLinksProps {
+  rootCategories: Category[];
+  basePath: string;
+}
+
+export function FooterCategoryLinks({
   rootCategories,
   basePath,
-  locale,
-}: FooterProps) {
+}: FooterCategoryLinksProps) {
+  return rootCategories.map((category) => (
+    <li key={category.id}>
+      <Link
+        href={`${basePath}/c/${category.permalink}`}
+        className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+      >
+        {category.name}
+      </Link>
+    </li>
+  ));
+}
+
+export async function Footer({ basePath, locale, categoryLinks }: FooterProps) {
   const t = await getTranslations({ locale, namespace: "footer" });
   const tp = await getTranslations({ locale, namespace: "policies" });
+  const wholesaleEnabled = isWholesaleEnabled();
 
   return (
     <footer className="bg-black text-gray-300">
@@ -258,16 +278,7 @@ export async function Footer({
                   {t("allProducts")}
                 </Link>
               </li>
-              {rootCategories.map((category) => (
-                <li key={category.id}>
-                  <Link
-                    href={`${basePath}/c/${category.permalink}`}
-                    className="text-sm text-neutral-400 hover:text-white transition-colors"
-                  >
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
+              {categoryLinks}
             </ul>
           </div>
 
@@ -301,6 +312,16 @@ export async function Footer({
                   {t("cart")}
                 </Link>
               </li>
+              {wholesaleEnabled && (
+                <li>
+                  <Link
+                    href={`${basePath}/wholesale`}
+                    className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+                  >
+                    {t("wholesale")}
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

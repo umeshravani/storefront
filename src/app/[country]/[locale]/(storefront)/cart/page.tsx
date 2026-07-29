@@ -7,9 +7,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
-import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
@@ -23,7 +23,7 @@ const ExpressCheckoutButton = dynamic(
 );
 
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem } = useCart();
+  const { cart, loading, updating, updateItem, removeItem } = useCart();
   const [expressProcessing, setExpressProcessing] = useState(false);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -130,18 +130,19 @@ export default function CartPage() {
 
                 {/* Quantity & Actions */}
                 <div className="flex flex-col items-end gap-2">
-                  <QuantityPicker
+                  <QuantityPickerField
                     quantity={item.quantity}
-                    onDecrement={() =>
-                      updateItem(item.id, Math.max(1, item.quantity - 1))
+                    onQuantityChange={(quantity) =>
+                      updateItem(item.id, quantity)
                     }
-                    onIncrement={() => updateItem(item.id, item.quantity + 1)}
+                    disabled={updating}
                   />
                   <Button
                     variant="destructive"
                     size="sm"
                     aria-label={t("removeItemLabel", { name: item.name })}
                     onClick={() => handleRemove(item)}
+                    disabled={updating}
                   >
                     {tc("remove")}
                   </Button>
@@ -192,7 +193,7 @@ export default function CartPage() {
                 </dd>
               </div>
 
-              {cart.gift_card && parseFloat(cart.gift_card_total) > 0 ? (
+              {cart.gift_card && parseFloat(cart.gift_card_total ?? "0") > 0 ? (
                 <div className="flex justify-between text-green-600">
                   <dt>{t("giftCard")}</dt>
                   <dd>-{cart.display_gift_card_total}</dd>
@@ -220,7 +221,7 @@ export default function CartPage() {
             </dl>
 
             <div className="mt-6 space-y-3">
-              {parseFloat(cart.total) > 0 && (
+              {parseFloat(cart.total ?? "0") > 0 && (
                 <ExpressCheckoutButton
                   cart={cart}
                   basePath={basePath}

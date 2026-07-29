@@ -115,6 +115,9 @@ importers:
       '@biomejs/biome':
         specifier: ^2.3.14
         version: 2.4.16
+      '@next/env':
+        specifier: ^16.2.12
+        version: 16.2.12
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.60.0
@@ -877,6 +880,9 @@ packages:
 
   '@next/env@16.2.11':
     resolution: {integrity: sha512-0do5A3BJ2gxWr0ZCMcD6BhW+e595jyxdTl3rXTS6lOtD8ektMiW6CO+EPwt1Eca1DBnm90r/7GdiKWBKxH++DA==}
+
+  '@next/env@16.2.12':
+    resolution: {integrity: sha512-d0Z5Bc13Fa4nR8pFAKx2jay2yhJM16vlfHbTzYnUQAxlNb6B6lmn4hjt69lYNt4kRtyYP6gEM49lPRHNbIyneg==}
 
   '@next/swc-darwin-arm64@16.2.11':
     resolution: {integrity: sha512-wryL4pjKmDwGv2ox6+GZDFxvmtSRLqApBR8kL1j4+vhB7Z5vJC/zAnXpiR9Xkfzl0AS8WLMnsuGV/UKI67/rrw==}
@@ -5686,6 +5692,8 @@ snapshots:
     optional: true
 
   '@next/env@16.2.11': {}
+
+  '@next/env@16.2.12': {}
 
   '@next/swc-darwin-arm64@16.2.11':
     optional: true

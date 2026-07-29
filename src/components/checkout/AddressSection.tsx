@@ -155,7 +155,8 @@ export function AddressSection({
         try {
           await onAutoSave({
             email: currentEmail,
-            shipping_address_id: savedAddrId,
+            // FIX: Always send full address payload to force Spree to recalculate shipping rates!
+            shipping_address: formDataToAddress(currentAddress),
           });
           lastSavedRef.current = hash;
         } catch {

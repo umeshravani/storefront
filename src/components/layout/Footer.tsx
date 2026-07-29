@@ -16,10 +16,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
+import { CurrentYear } from "@/components/ui/CurrentYear";
+import { SpreeImage } from "@/components/ui/SpreeImage";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { isWholesaleEnabled } from "@/lib/spree";
-import { getStoreDescription, getStoreName } from "@/lib/store";
-import { CurrentYear } from "./CurrentYear";
+import { getStoreDescription, getStoreName, getStoreUrl } from "@/lib/store";
 
 const storeName = getStoreName();
 const storeDescription = getStoreDescription();
@@ -349,7 +350,7 @@ export async function Footer({ basePath, locale, categoryLinks }: FooterProps) {
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col-reverse md:flex-row items-center justify-between gap-6">
           <div className="text-xs text-neutral-400 text-center md:text-left">
             <p>
-              &copy; {new Date().getFullYear()} {storeName}. {t("abrandof")}{" "}
+              &copy; <CurrentYear /> {storeName}. {t("abrandof")}{" "}
               <Link
                 href="https://artolika.com"
                 target="_blank"

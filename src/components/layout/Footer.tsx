@@ -17,10 +17,9 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { CurrentYear } from "@/components/ui/CurrentYear";
-import { SpreeImage } from "@/components/ui/SpreeImage";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { isWholesaleEnabled } from "@/lib/spree";
-import { getStoreDescription, getStoreName, getStoreUrl } from "@/lib/store";
+import { getStoreDescription, getStoreName } from "@/lib/store";
 
 const storeName = getStoreName();
 const storeDescription = getStoreDescription();

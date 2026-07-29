@@ -41,7 +41,7 @@ export default function WholesaleApplyPage() {
   const tr = useTranslations("register");
   const pathname = usePathname();
   const storeBase = extractBasePath(pathname);
-  const wholesaleBase = `${storeBase}/wholesale`;
+  const wholesaleBase = `${storeBase}/business`;
   const { register } = useAuth();
 
   const [firstName, setFirstName] = useState("");
@@ -101,7 +101,7 @@ export default function WholesaleApplyPage() {
             <CardDescription>{t("apply.receivedDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Button asChild className="bg-slate-900 hover:bg-slate-800">
+            <Button asChild className="bg-neutral-900 hover:bg-neutral-800">
               <Link href={wholesaleBase}>{t("apply.goToPortal")}</Link>
             </Button>
           </CardContent>
@@ -114,8 +114,8 @@ export default function WholesaleApplyPage() {
     <div className="mx-auto max-w-xl px-4 py-16 sm:px-6 lg:px-8">
       <Card>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
-            <Building2 className="h-6 w-6 text-slate-700" />
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100">
+            <Building2 className="h-6 w-6 text-neutral-700" />
           </div>
           <CardTitle>{t("apply.title")}</CardTitle>
           <CardDescription>{t("apply.description")}</CardDescription>
@@ -206,7 +206,7 @@ export default function WholesaleApplyPage() {
                   placeholder="••••••••"
                   className="pr-10"
                 />
-                <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                <div className="absolute right-1 top-1/2 -tranneutral-y-1/2">
                   <Button
                     type="button"
                     variant="ghost"
@@ -230,7 +230,7 @@ export default function WholesaleApplyPage() {
               type="submit"
               disabled={submitting}
               size="lg"
-              className="w-full bg-slate-900 hover:bg-slate-800"
+              className="w-full bg-neutral-900 hover:bg-neutral-800"
             >
               {submitting ? tr("creatingAccount") : t("apply.submit")}
             </Button>
@@ -242,7 +242,7 @@ export default function WholesaleApplyPage() {
             {t("apply.alreadyMember")}{" "}
             <Link
               href={wholesaleSignInHref(storeBase)}
-              className="font-medium text-slate-900 hover:underline"
+              className="font-medium text-neutral-900 hover:underline"
             >
               {t("signInWall.submit")}
             </Link>

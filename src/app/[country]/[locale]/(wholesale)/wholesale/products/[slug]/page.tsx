@@ -64,7 +64,7 @@ async function WholesaleProductContent({
   return (
     <>
       <div className="container mx-auto px-4 pt-8 sm:px-6 lg:px-8">
-        <p className="inline-block rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600">
+        <p className="inline-block rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm font-medium text-neutral-600">
           {t("pdp.tradePriceHint", { min: WHOLESALE_MIN_QUANTITY })}
         </p>
       </div>

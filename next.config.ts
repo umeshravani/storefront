@@ -143,6 +143,10 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: "/:country/:locale/business/:path*",
+        destination: "/:country/:locale/wholesale/:path*",
+      },
+      {
         source: "/api/:path*",
         destination: `${baseUrl}/api/:path*`,
       },

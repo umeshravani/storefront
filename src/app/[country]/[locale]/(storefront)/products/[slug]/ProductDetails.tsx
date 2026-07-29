@@ -3,12 +3,10 @@
 import type { Media, Product, Variant } from "@spree/sdk";
 import {
   ChevronDown,
-  CircleCheckBig,
   CircleX,
   GalleryThumbnails,
   Loader2,
   Rotate3D,
-  ShoppingBag,
   ShoppingCart,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -126,7 +124,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   useEffect(() => {
     setCartError(null);
     setIsLiveOutOfStock(false);
-  }, [selectedVariant?.id]);
+  }, []);
 
   // Fetch real reviews data
   useEffect(() => {
@@ -451,7 +449,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                         const viewer = document.querySelector(
                           "model-viewer",
                         ) as any;
-                        if (viewer && viewer.activateAR) {
+                        if (viewer?.activateAR) {
                           viewer.activateAR();
                         }
                       }, 100);

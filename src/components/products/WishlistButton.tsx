@@ -24,8 +24,8 @@ export function WishlistButton({
   const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
-  const [wishlistId, setWishlistId] = useState<string | null>(null);
-  const [wishedItemId, setWishedItemId] = useState<string | null>(null);
+  const [_wishlistId, setWishlistId] = useState<string | null>(null);
+  const [_wishedItemId, setWishedItemId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {

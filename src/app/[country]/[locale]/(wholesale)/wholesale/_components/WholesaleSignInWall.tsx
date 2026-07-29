@@ -41,7 +41,7 @@ export function WholesaleSignInWall({
   const searchParams = useSearchParams();
   const { login } = useAuth();
 
-  const wholesaleBase = `${basePath}/wholesale`;
+  const wholesaleBase = `${basePath}/business`;
   const redirectUrl = safeRedirectPath(
     searchParams.get("redirect"),
     wholesaleBase,
@@ -68,27 +68,27 @@ export function WholesaleSignInWall({
   };
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8">
+    <div className="mx-auto grid min-h-screen items-center max-w-5xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8">
       <div className="flex flex-col justify-center">
-        <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-100">
+        <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-100">
           <Building2 className="h-3.5 w-3.5" />
           {t("badge")}
         </div>
-        <h1 className="text-3xl font-bold text-slate-900">
+        <h1 className="text-3xl font-bold text-neutral-900">
           {t("signInWall.title")}
         </h1>
-        <p className="mt-4 text-slate-600">{t("signInWall.description")}</p>
+        <p className="mt-4 text-neutral-600">{t("signInWall.description")}</p>
         {storefrontAccess === "login_required" && (
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-neutral-500">
             {t("signInWall.gatedNotice")}
           </p>
         )}
         <div className="mt-8">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-neutral-600">
             {t("signInWall.noAccount")}{" "}
             <Link
               href={`${wholesaleBase}/apply`}
-              className="font-medium text-slate-900 underline underline-offset-4"
+              className="font-medium text-neutral-900 underline underline-offset-4"
             >
               {t("signInWall.applyLink")}
             </Link>
@@ -138,7 +138,7 @@ export function WholesaleSignInWall({
                   placeholder="••••••••"
                   className="pr-10"
                 />
-                <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                <div className="absolute right-1 top-1/2 -tranneutral-y-1/2">
                   <Button
                     type="button"
                     variant="ghost"
@@ -162,7 +162,7 @@ export function WholesaleSignInWall({
               type="submit"
               disabled={loading}
               size="lg"
-              className="w-full bg-slate-900 hover:bg-slate-800"
+              className="w-full bg-neutral-900 hover:bg-neutral-800"
             >
               {loading ? ta("signingIn") : t("signInWall.submit")}
             </Button>
@@ -172,7 +172,7 @@ export function WholesaleSignInWall({
           <p className="text-sm text-muted-foreground">
             <Link
               href={`${basePath}/account/forgot-password`}
-              className="font-medium text-slate-900 hover:underline"
+              className="font-medium text-neutral-900 hover:underline"
             >
               {ta("forgotPassword")}
             </Link>

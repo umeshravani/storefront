@@ -36,7 +36,7 @@ export function wholesaleSignInHref(
   basePath: string,
   returnTo?: string | null,
 ): string {
-  const signInPath = `${basePath}/wholesale/sign-in`;
+  const signInPath = `${basePath}/business/sign-in`;
   const target = resolveLocalPath(returnTo);
   if (!target) return signInPath;
 

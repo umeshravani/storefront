@@ -55,7 +55,7 @@ export function getConfig(): SpreeNextConfig {
  * `SPREE_WHOLESALE_CHANNEL` names the gated channel to use (e.g. `wholesale`).
  * There is deliberately no default — an unset value means the storefront runs
  * DTC-only, and every wholesale entry point (nav, footer, homepage section,
- * the `/wholesale` routes) stays hidden.
+ * the `/business` routes) stays hidden.
  *
  * @returns the wholesale channel code, or null if wholesale is disabled
  */

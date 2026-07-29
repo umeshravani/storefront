@@ -1,12 +1,11 @@
 import type { Category } from "@spree/sdk";
-import { UserRound } from "lucide-react";
+import { HeartHandshake, UserRound } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { CartButton } from "@/components/layout/CartButton";
-import { DesktopMenu } from "@/components/layout/DesktopMenu";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
 import { isWholesaleEnabled } from "@/lib/spree";
@@ -121,15 +120,23 @@ export async function Header({
         <div className="hidden lg:flex lg:items-center lg:gap-1">
           {/* Trade portal entry point — understated, secondary to the catalog nav.
               Only shown when the wholesale addon is enabled. */}
-          {wholesaleEnabled && (
-            <Link
-              href={`${basePath}/wholesale`}
-              className="px-2 py-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors whitespace-nowrap"
-            >
-              {t("wholesale")}
-            </Link>
-          )}
           <LazyRegionPreferences variant="header" />
+          {wholesaleEnabled && (
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              asChild
+              className="rounded-md"
+            >
+              <Link
+                href={`${basePath}/business`}
+                aria-label={t("wholesale")}
+                className="text-black transition-colors"
+              >
+                <HeartHandshake className="size-5" />
+              </Link>
+            </Button>
+          )}
         </div>
       }
       rightEnd={

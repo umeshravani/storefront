@@ -249,7 +249,7 @@ export function MobileMenu({
               <div className="mt-2 pt-2 border-t border-gray-200">
                 {wholesaleEnabled && (
                   <Link
-                    href={`${basePath}/wholesale`}
+                    href={`${basePath}/business`}
                     onClick={() => setOpen(false)}
                     className={`${linkClass} block`}
                   >

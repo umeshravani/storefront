@@ -1,3 +1,4 @@
+import { BadgeDollarSign, History, Zap } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
@@ -29,37 +30,40 @@ export async function WholesaleSection({
     {
       title: t("wholesaleBenefitPricingTitle"),
       description: t("wholesaleBenefitPricingDescription"),
+      Icon: BadgeDollarSign,
     },
     {
       title: t("wholesaleBenefitQuickOrderTitle"),
       description: t("wholesaleBenefitQuickOrderDescription"),
+      Icon: Zap,
     },
     {
       title: t("wholesaleBenefitOrdersTitle"),
       description: t("wholesaleBenefitOrdersDescription"),
+      Icon: History,
     },
   ];
 
   return (
-    <section className="bg-slate-900 text-slate-100">
+    <section className="bg-black text-neutral-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
           {/* Pitch + CTAs */}
           <div>
-            <span className="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <span className="inline-flex items-center rounded-full bg-neutral-800 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-300">
               {t("wholesaleBadge")}
             </span>
             <h2 className="mt-4 text-2xl font-bold text-white">
               {t("wholesaleTitle")}
             </h2>
-            <p className="mt-4 text-slate-300">{t("wholesaleDescription")}</p>
+            <p className="mt-4 text-neutral-300">{t("wholesaleDescription")}</p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button
                 size="lg"
                 asChild
-                className="bg-white text-slate-900 hover:bg-slate-200"
+                className="bg-white text-neutral-900 hover:bg-neutral-200"
               >
-                <Link href={`${basePath}/wholesale`}>
+                <Link href={`${basePath}/business`}>
                   {t("wholesaleCtaPrimary")}
                 </Link>
               </Button>
@@ -67,9 +71,9 @@ export async function WholesaleSection({
                 variant="outline"
                 size="lg"
                 asChild
-                className="border-slate-600 bg-transparent text-slate-100 hover:bg-slate-800 hover:text-white"
+                className="border-neutral-600 bg-transparent text-neutral-100 hover:bg-neutral-800 hover:text-white"
               >
-                <Link href={`${basePath}/wholesale/apply`}>
+                <Link href={`${basePath}/business/apply`}>
                   {t("wholesaleCtaSecondary")}
                 </Link>
               </Button>
@@ -78,15 +82,18 @@ export async function WholesaleSection({
 
           {/* What approved buyers get — two-up on tablets so it doesn't look sparse */}
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            {benefits.map((benefit) => (
+            {benefits.map(({ title, description, Icon }) => (
               <li
-                key={benefit.title}
-                className="rounded-lg border border-slate-800 bg-slate-800/40 px-5 py-4"
+                key={title}
+                className="flex items-start gap-4 rounded-lg border border-neutral-800 bg-neutral-800/40 px-5 py-4"
               >
-                <h3 className="font-semibold text-white">{benefit.title}</h3>
-                <p className="mt-1 text-sm text-slate-300">
-                  {benefit.description}
-                </p>
+                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-neutral-300">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">{title}</h3>
+                  <p className="mt-1 text-sm text-neutral-300">{description}</p>
+                </div>
               </li>
             ))}
           </ul>

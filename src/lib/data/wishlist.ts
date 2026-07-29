@@ -203,7 +203,7 @@ export async function listWishlistItems(): Promise<WishlistItem[]> {
   if (!token) return [];
 
   const wishlist = await getDefaultWishlist(token);
-  if (!wishlist || !wishlist.items || wishlist.items.length === 0) return [];
+  if (!wishlist?.items || wishlist.items.length === 0) return [];
 
   // The wishlist/item response only gives us product_id — fetch each
   // product once (deduped) to get its name/slug/image.

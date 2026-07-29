@@ -50,7 +50,7 @@ export function QuickOrderView() {
   const t = useTranslations("wholesale");
   const { addItem, openCart } = useCart();
   const pathname = usePathname();
-  const wholesaleBase = `${extractBasePath(pathname)}/wholesale`;
+  const wholesaleBase = `${extractBasePath(pathname)}/business`;
   const rowIdSeed = useId();
 
   const [rows, setRows] = useState<QuickOrderRow[]>([
@@ -142,20 +142,20 @@ export function QuickOrderView() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">
+        <h1 className="text-3xl font-bold text-neutral-900">
           {t("quickOrder.title")}
         </h1>
-        <p className="mt-2 text-slate-500">{t("quickOrder.subtitle")}</p>
+        <p className="mt-2 text-neutral-500">{t("quickOrder.subtitle")}</p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="grid grid-cols-[1fr_7rem_auto] gap-3 border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+      <div className="rounded-xl border border-neutral-200 bg-white">
+        <div className="grid grid-cols-[1fr_7rem_auto] gap-3 border-b border-neutral-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
           <span>{t("quickOrder.skuHeader")}</span>
           <span>{t("quickOrder.qtyHeader")}</span>
           <span className="sr-only">{t("quickOrder.actionsHeader")}</span>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-neutral-100">
           {rows.map((row) => (
             <div key={row.id} className="px-4 py-3">
               <div className="grid grid-cols-[1fr_7rem_auto] items-start gap-3">
@@ -226,7 +226,7 @@ export function QuickOrderView() {
               </div>
 
               {row.status.kind === "adding" && (
-                <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                <p className="mt-1 flex items-center gap-1.5 text-sm text-neutral-500">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   {t("quickOrder.adding")}
                 </p>
@@ -247,7 +247,7 @@ export function QuickOrderView() {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 px-4 py-3">
           <Button type="button" variant="outline" onClick={addRow}>
             <Plus className="h-4 w-4" />
             {t("quickOrder.addRow")}
@@ -260,7 +260,7 @@ export function QuickOrderView() {
             <Button
               onClick={handleAddAll}
               disabled={submitting}
-              className="bg-slate-900 hover:bg-slate-800"
+              className="bg-neutral-900 hover:bg-neutral-800"
             >
               {submitting ? (
                 <>

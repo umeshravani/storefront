@@ -36,11 +36,11 @@ export default async function WholesaleProductsPage({
       {() => (
         <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900">
+            <h1 className="text-3xl font-bold text-neutral-900">
               {t("plp.title")}
             </h1>
-            <p className="mt-2 text-slate-500">{t("plp.subtitle")}</p>
-            <p className="mt-4 inline-block rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            <p className="mt-2 text-neutral-500">{t("plp.subtitle")}</p>
+            <p className="mt-4 inline-block rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-600">
               {t("plp.tradePriceNote", { min: WHOLESALE_MIN_QUANTITY })}
             </p>
           </div>

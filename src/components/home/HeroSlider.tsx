@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface HeroSliderProps {
@@ -15,17 +15,19 @@ export function HeroSlider({ basePath, shopNowText }: HeroSliderProps) {
   const slides = [
     {
       title: "A Legacy of Art, Framed for Eternity",
-      description: "Transform your space with our timeless artistry. Shop now for the best in indian art innovation",
+      description:
+        "Transform your space with our timeless artistry. Shop now for the best in indian art innovation",
       // Desktop image (Landscape)
-      image: "/images/slider/01%20Slider%20WallX.webp", 
+      image: "/images/slider/01%20Slider%20WallX.webp",
       // Mobile image (Portrait) - Replace with your actual mobile URL
-      mobileImage: "/images/slider/mobile/01%20Slider%20WallX.webp", 
+      mobileImage: "/images/slider/mobile/01%20Slider%20WallX.webp",
       ctaUrl: `${basePath}/products?category=frames`,
       ctaText: "Start Framing",
     },
     {
       title: "Art That Speaks, Frames That Impress",
-      description: "Elevate your space with meticulously crafted frames designed to enhance the beauty of every masterpiece.",
+      description:
+        "Elevate your space with meticulously crafted frames designed to enhance the beauty of every masterpiece.",
       image: "/images/slider/04%20Slider%20WallX.webp",
       mobileImage: "/images/slider/mobile/04%20Slider%20WallX.webp",
       ctaUrl: `${basePath}/products?category=hardware`,
@@ -33,12 +35,13 @@ export function HeroSlider({ basePath, shopNowText }: HeroSliderProps) {
     },
     {
       title: "Timeless Art in Luxurious Frames",
-      description: "Step into a world of sophistication with premium frames that bring depth, richness, and lasting beauty to your collection.",
+      description:
+        "Step into a world of sophistication with premium frames that bring depth, richness, and lasting beauty to your collection.",
       image: "/images/slider/03%20Slider%20WallX.webp",
       mobileImage: "/images/slider/mobile/03%20Slider%20WallX.webp",
       ctaUrl: `${basePath}/products?sale=true`,
       ctaText: "Shop The Sale",
-    }
+    },
   ];
 
   useEffect(() => {
@@ -54,33 +57,37 @@ export function HeroSlider({ basePath, shopNowText }: HeroSliderProps) {
         <div
           key={index}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+            index === currentSlide
+              ? "opacity-100 z-10"
+              : "opacity-0 z-0 pointer-events-none"
           }`}
         >
           {/* DESKTOP Background Image (Hidden on mobile) */}
-          <div 
+          <div
             className={`hidden md:block absolute inset-0 bg-cover bg-center transition-transform duration-[6000ms] ease-out ${
               index === currentSlide ? "scale-100" : "scale-105"
             }`}
             style={{ backgroundImage: `url(${slide.image})` }}
           />
-          
+
           {/* MOBILE Background Image (Hidden on desktop) */}
-          <div 
+          <div
             className={`block md:hidden absolute inset-0 bg-cover bg-center transition-transform duration-[6000ms] ease-out ${
               index === currentSlide ? "scale-100" : "scale-105"
             }`}
             style={{ backgroundImage: `url(${slide.mobileImage})` }}
           />
-          
+
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
 
           {/* Content Container */}
           <div className="relative h-full container mx-auto px-6 md:px-12 lg:px-16 flex flex-col justify-end items-start text-left pb-24 md:pb-32">
-            <div 
+            <div
               className={`max-w-2xl transform transition-all duration-1000 delay-300 ${
-                index === currentSlide ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+                index === currentSlide
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-8 opacity-0"
               }`}
             >
               <h1 className="text-2xl md:text-3xl lg:text-3xl font-bold text-white tracking-tight mb-6 leading-tight drop-shadow-lg">
@@ -89,9 +96,9 @@ export function HeroSlider({ basePath, shopNowText }: HeroSliderProps) {
               <p className="text-sm md:text-base lg:text-base text-gray-200 mb-10 leading-relaxed max-w-xl drop-shadow-md">
                 {slide.description}
               </p>
-              <Button 
-                size="sm" 
-                className="bg-white text-gray-900 hover:bg-gray-200 px-6 py-6 text-xs md:text-sm font-semibold uppercase tracking-wider rounded-4xl transition-colors shadow-lg" 
+              <Button
+                size="sm"
+                className="bg-white text-gray-900 hover:bg-gray-200 px-6 py-6 text-xs md:text-sm font-semibold uppercase tracking-wider rounded-4xl transition-colors shadow-lg"
                 asChild
               >
                 <Link href={slide.ctaUrl}>{slide.ctaText}</Link>
@@ -108,7 +115,9 @@ export function HeroSlider({ basePath, shopNowText }: HeroSliderProps) {
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`h-1.5 transition-all duration-500 rounded-full ${
-              index === currentSlide ? "w-10 bg-white" : "w-3 bg-white/40 hover:bg-white/80"
+              index === currentSlide
+                ? "w-10 bg-white"
+                : "w-3 bg-white/40 hover:bg-white/80"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

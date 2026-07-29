@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Script from "next/script";
+import { useEffect, useRef } from "react";
 
 interface RazorpayAffordabilityProps {
   amount: number;
@@ -21,9 +21,11 @@ export function RazorpayAffordability({
     if (initializedRef.current) return;
 
     const initWidget = () => {
-      const container = document.getElementById("razorpay-affordability-widget");
+      const container = document.getElementById(
+        "razorpay-affordability-widget",
+      );
       if (!container) return;
-      
+
       // Prevent double-rendering in React Strict Mode
       if (container.innerHTML.trim() !== "") return;
 
@@ -39,7 +41,7 @@ export function RazorpayAffordability({
                 content: { backgroundColor: "#ffffff", color: "#000000" },
                 discount: { color: "#e60099" },
                 link: { button: true, color: "#000000" },
-              }
+              },
             },
             offers: true,
             emi: true,
@@ -71,8 +73,8 @@ export function RazorpayAffordability({
 
   return (
     <div className="w-full my-4 min-h-[100px]">
-      <Script 
-        src="https://cdn.razorpay.com/widgets/affordability/affordability.js" 
+      <Script
+        src="https://cdn.razorpay.com/widgets/affordability/affordability.js"
         strategy="lazyOnload"
       />
       {/* The ID here is exactly what Razorpay expects to find */}

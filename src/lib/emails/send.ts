@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { ReactElement } from "react";
 import { render } from "@react-email/render";
 import nodemailer from "nodemailer";
+import type { ReactElement } from "react";
 import { getStoreEmailFrom, isStoreEmailFromFallback } from "@/lib/store";
 
 interface SendEmailOptions {
@@ -16,7 +16,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 // 1. Singleton Transporter: Initialize ONCE to keep the connection pool warm.
 // This prevents "Connection closed" errors caused by opening/closing SMTP sockets constantly.
-const transporter = process.env.SMTP_USER 
+const transporter = process.env.SMTP_USER
   ? nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
       port: Number(process.env.SMTP_PORT) || 465,
@@ -65,12 +65,14 @@ async function sendEmailNodemailer({
 
   // Convert React to HTML
   const html = await render(react);
-  
+
   // Use EMAIL_FROM env var, or fallback to store setting
   const fromAddress = from || process.env.EMAIL_FROM || getStoreEmailFrom();
 
   if (!from && isStoreEmailFromFallback()) {
-    console.warn("[email] EMAIL_FROM is using fallback — verify this is authorized by your SMTP provider.");
+    console.warn(
+      "[email] EMAIL_FROM is using fallback — verify this is authorized by your SMTP provider.",
+    );
   }
 
   try {

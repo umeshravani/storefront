@@ -33,7 +33,7 @@ export default async function WholesaleSignInPage({
   ]);
 
   if (customer) {
-    redirect(safeRedirectPath(redirectParam, `${basePath}/wholesale`));
+    redirect(safeRedirectPath(redirectParam, `${basePath}/business`));
   }
 
   return (

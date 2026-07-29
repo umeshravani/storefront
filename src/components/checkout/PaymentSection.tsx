@@ -48,7 +48,6 @@ import { getCreditCards } from "@/lib/data/credit-cards";
 import {
   createCheckoutPaymentSession,
   createDirectPayment,
-  updateCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import {
   type AddressFormData,

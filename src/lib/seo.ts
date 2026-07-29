@@ -94,10 +94,11 @@ export function buildProductJsonLd(
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         applicableCountry: "IN",
-        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        returnPolicyCategory:
+          "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: "7",
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn"
+        returnFees: "https://schema.org/FreeReturn",
       },
 
       // FREE DELIVERY SCHEMA
@@ -106,7 +107,7 @@ export function buildProductJsonLd(
         shippingRate: {
           "@type": "MonetaryAmount",
           value: "0",
-          currency: product.price.currency
+          currency: product.price.currency,
         },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
@@ -114,16 +115,16 @@ export function buildProductJsonLd(
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 1,
-            unitCode: "d" // "d" stands for days
+            unitCode: "d", // "d" stands for days
           },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 1,
             maxValue: 5,
-            unitCode: "d"
-          }
-        }
-      }
+            unitCode: "d",
+          },
+        },
+      },
     };
   }
 

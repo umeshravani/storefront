@@ -16,6 +16,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
+import { AnimatedLogo } from "@/components/ui/AnimatedLogo";
 import { CurrentYear } from "@/components/ui/CurrentYear";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { isWholesaleEnabled } from "@/lib/spree";
@@ -58,38 +59,6 @@ export async function Footer({ basePath, locale, categoryLinks }: FooterProps) {
 
   return (
     <footer className="bg-black text-gray-300">
-      {/* Custom CSS for the animated gold shine effect.*/}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes goldShine {
-          0% { background-position: 200% center; }
-          100% { background-position: -200% center; }
-        }
-        .logo-shine-mask {
-          background: linear-gradient(
-            110deg,
-            #C0C0C0 0%,
-            #E0E0E0 30%,
-            #ffffff 50%,
-            #E0E0E0 70%,
-            #C0C0C0 100%
-          );
-          background-size: 200% auto;
-          animation: goldShine 3s linear infinite;
-          -webkit-mask-image: url(/wallx.svg);
-          -webkit-mask-size: contain;
-          -webkit-mask-repeat: no-repeat;
-          -webkit-mask-position: left center;
-          mask-image: url(/wallx.svg);
-          mask-size: contain;
-          mask-repeat: no-repeat;
-          mask-position: left center;
-        }
-      `,
-        }}
-      />
-
       {/* Browsers won't render gradients if display: none is applied.*/}
       <svg
         style={{ position: "absolute", width: 0, height: 0 }}
@@ -189,7 +158,7 @@ export async function Footer({ basePath, locale, categoryLinks }: FooterProps) {
               aria-label={storeName}
               className="block min-w-0"
             >
-              <div className="w-[90px] h-[32px] logo-shine-mask" />
+              <AnimatedLogo className="w-[90px] h-[32px]" variant="silver" />
             </Link>
 
             <p className="mt-4 text-sm text-neutral-400 max-w-sm">
@@ -315,7 +284,7 @@ export async function Footer({ basePath, locale, categoryLinks }: FooterProps) {
               {wholesaleEnabled && (
                 <li>
                   <Link
-                    href={`${basePath}/wholesale`}
+                    href={`${basePath}/business`}
                     className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                   >
                     {t("wholesale")}

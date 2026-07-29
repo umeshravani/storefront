@@ -178,9 +178,9 @@ export function VariantPicker({
                       style={
                         optionValue?.image_url
                           ? {
-                            backgroundImage: `url(${optionValue.image_url})`,
-                            backgroundSize: "cover",
-                          }
+                              backgroundImage: `url(${optionValue.image_url})`,
+                              backgroundSize: "cover",
+                            }
                           : optionValue?.color_code
                             ? { backgroundColor: optionValue.color_code }
                             : { backgroundColor: "#e5e7eb" }
@@ -217,9 +217,10 @@ export function VariantPicker({
                       disabled={!isAvailable}
                       className={`
                         px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border
-                        ${isSelected
-                          ? "bg-gray-900 border-gray-900 text-white font-medium"
-                          : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                        ${
+                          isSelected
+                            ? "bg-gray-900 border-gray-900 text-white font-medium"
+                            : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
                         }
                         ${!isAvailable ? "opacity-30 cursor-not-allowed !bg-gray-50 !text-gray-400" : "cursor-pointer"}
                       `}
@@ -227,8 +228,9 @@ export function VariantPicker({
                       {optionValue?.label || value}
                       {!isPurchasable && isAvailable && (
                         <span
-                          className={`ml-2 text-xs font-normal ${isSelected ? "text-gray-300" : "text-gray-400"
-                            }`}
+                          className={`ml-2 text-xs font-normal ${
+                            isSelected ? "text-gray-300" : "text-gray-400"
+                          }`}
                         >
                           {t("outOfStockVariant")}
                         </span>

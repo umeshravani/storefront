@@ -8,7 +8,7 @@ import { QuoteSection } from "@/components/home/QuoteSection";
 import { RichTextSection } from "@/components/home/RichTextSection";
 import { WholesaleSection } from "@/components/home/WholesaleSection";
 
-import { getMarkets, resolveCurrency } from "@/lib/data/markets";
+import { resolveCurrency } from "@/lib/data/markets";
 import { generateHomeMetadata } from "@/lib/metadata/home";
 
 interface HomePageProps {
@@ -51,10 +51,9 @@ export default async function HomePage({ params }: HomePageProps) {
         country={country}
         currency={currency}
       />
-      <WholesaleSection basePath={basePath} locale={locale} />
-
       {/* Insert the Quote Section here */}
       <QuoteSection basePath={basePath} />
+      <WholesaleSection basePath={basePath} locale={locale} />
     </main>
   );
 }

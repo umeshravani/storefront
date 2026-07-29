@@ -14,7 +14,6 @@ import {
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { getStoreName } from "@/lib/store";
 import { extractBasePath } from "@/lib/utils/path";
-import logo from "../../../public/wallx.svg";
 
 const storeName = getStoreName();
 

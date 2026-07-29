@@ -358,7 +358,7 @@ function CheckoutPageContentInner({
           window.dispatchEvent(new Event("resize"));
           routerRef.current.refresh();
         }
-      } catch (error) {
+      } catch (_error) {
         setError(tRef.current("generalError"));
       } finally {
         setSaving(false);

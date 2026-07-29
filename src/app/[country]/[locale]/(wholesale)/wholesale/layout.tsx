@@ -19,7 +19,7 @@ interface WholesaleLayoutProps {
 export default function WholesaleLayout({ children }: WholesaleLayoutProps) {
   if (!isWholesaleEnabled()) notFound();
 
-  return <div className="min-h-screen bg-slate-50">{children}</div>;
+  return <div className="min-h-screen bg-neutral-50">{children}</div>;
 }
 
 export async function generateMetadata({

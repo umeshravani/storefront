@@ -1,6 +1,9 @@
+import { loadEnvConfig } from "@next/env";
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+
+loadEnvConfig(process.cwd());
 
 const withNextIntl = createNextIntlPlugin();
 
@@ -85,22 +88,22 @@ const nextConfig: NextConfig = {
     return [
       {
         // Redirect legacy Spree Taxons to Next.js Categories
-        source: '/t/:path*',
-        destination: '/in/en/c/:path*',
+        source: "/t/:path*",
+        destination: "/in/en/c/:path*",
         permanent: true,
       },
       {
         // Redirect legacy Products to Next.js Products
-        source: '/products/:slug',
-        destination: '/in/en/products/:slug',
+        source: "/products/:slug",
+        destination: "/in/en/products/:slug",
         permanent: true,
       },
       {
         // Catch stray root sitemap requests and point them to Next.js chunks
-        source: '/sitemap.xml',
-        destination: '/sitemap/0.xml',
+        source: "/sitemap.xml",
+        destination: "/sitemap/0.xml",
         permanent: true,
-      }
+      },
     ];
   },
 
@@ -130,14 +133,14 @@ const configWithIntl = withNextIntl(nextConfig);
 
 export default process.env.SENTRY_DSN
   ? withSentryConfig(configWithIntl, {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    silent: !process.env.CI,
-    widenClientFileUpload: true,
-    sourcemaps: {
-      deleteSourcemapsAfterUpload: true,
-    },
-    telemetry: false,
-  })
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      sourcemaps: {
+        deleteSourcemapsAfterUpload: true,
+      },
+      telemetry: false,
+    })
   : configWithIntl;

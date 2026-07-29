@@ -15,6 +15,8 @@ import {
   Text,
 } from "react-email";
 import { getStoreName, getStoreUrl } from "@/lib/store";
+import { StoreFooter } from "./components/StoreFooter";
+import { StoreLogo } from "./components/StoreLogo";
 
 interface ShippedItem {
   name: string;
@@ -58,6 +60,7 @@ export function ShipmentShippedEmail({
       </Preview>
       <Body style={main}>
         <Container style={container}>
+          <StoreLogo storeUrl={storeUrl} />
           <Heading style={heading}>Your order is on its way!</Heading>
           <Text style={paragraph}>
             Hi {firstName}, great news! Your order{" "}
@@ -137,17 +140,7 @@ export function ShipmentShippedEmail({
 
           <Hr style={hr} />
 
-          <Text style={footer}>
-            {storeName}
-            {storeUrl && (
-              <>
-                {" - "}
-                <Link href={storeUrl} style={footerLink}>
-                  {storeUrl.replace(/^https?:\/\//, "")}
-                </Link>
-              </>
-            )}
-          </Text>
+          <StoreFooter storeName={storeName} storeUrl={storeUrl} />
         </Container>
       </Body>
     </Html>
@@ -263,15 +256,4 @@ const itemOptions: React.CSSProperties = {
   fontSize: "12px",
   color: "#6b7280",
   margin: "2px 0",
-};
-
-const footer: React.CSSProperties = {
-  fontSize: "12px",
-  color: "#9ca3af",
-  textAlign: "center" as const,
-};
-
-const footerLink: React.CSSProperties = {
-  color: "#9ca3af",
-  textDecoration: "underline",
 };

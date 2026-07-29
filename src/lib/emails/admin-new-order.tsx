@@ -12,7 +12,9 @@ import {
   Row,
   Section,
   Text,
-} from "react-email";
+} from "@react-email/components";
+import type { Address } from "@spree/sdk";
+import type React from "react";
 import { getStoreName, getStoreUrl } from "@/lib/store";
 import { StoreFooter } from "./components/StoreFooter";
 import { StoreLogo } from "./components/StoreLogo";
@@ -27,20 +29,7 @@ interface LineItem {
   thumbnail_url?: string | null;
 }
 
-interface Address {
-  full_name?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
-  address1?: string | null;
-  address2?: string | null;
-  city?: string | null;
-  state_text?: string | null;
-  postal_code?: string | null;
-  country_name?: string | null;
-  phone?: string | null;
-}
-
-interface OrderConfirmationEmailProps {
+interface AdminNewOrderEmailProps {
   orderNumber: string;
   customerName: string;
   storeName?: string;
@@ -56,7 +45,7 @@ interface OrderConfirmationEmailProps {
   deliveryMethodName?: string;
 }
 
-export function OrderConfirmationEmail({
+export function AdminNewOrderEmail({
   orderNumber,
   customerName,
   storeName = getStoreName(),
@@ -70,22 +59,20 @@ export function OrderConfirmationEmail({
   shippingAddress,
   billingAddress,
   deliveryMethodName,
-}: OrderConfirmationEmailProps) {
-  const firstName = customerName.split(" ")[0] || "there";
-
+}: AdminNewOrderEmailProps) {
   return (
     <Html>
       <Head />
       <Preview>
-        Order {orderNumber} confirmed - {storeName}
+        New Order {orderNumber} placed by {customerName} - {storeName}
       </Preview>
       <Body style={main}>
         <Container style={container}>
           <StoreLogo storeUrl={storeUrl} />
-          <Heading style={heading}>Thanks for your order, {firstName}!</Heading>
+          <Heading style={heading}>New Order Received: {orderNumber}</Heading>
           <Text style={paragraph}>
-            Your order <strong>{orderNumber}</strong> has been confirmed. We'll
-            send you another email when it ships.
+            A new order has been successfully placed by{" "}
+            <strong>{customerName}</strong>.
           </Text>
 
           <Hr style={hr} />
@@ -276,7 +263,7 @@ const hr: React.CSSProperties = {
 };
 
 const itemRow: React.CSSProperties = {
-  marginBottom: "16px",
+  marginBottom: "12px",
 };
 
 const itemImageCol: React.CSSProperties = {
@@ -297,7 +284,7 @@ const imagePlaceholder: React.CSSProperties = {
 };
 
 const itemDetailsCol: React.CSSProperties = {
-  paddingLeft: "12px",
+  paddingLeft: "16px",
   verticalAlign: "top",
 };
 
@@ -305,13 +292,14 @@ const itemName: React.CSSProperties = {
   fontSize: "14px",
   fontWeight: "500",
   color: "#111827",
+  margin: "0",
   textDecoration: "none",
 };
 
 const itemOptions: React.CSSProperties = {
   fontSize: "12px",
   color: "#6b7280",
-  margin: "2px 0",
+  margin: "4px 0",
 };
 
 const itemPriceCol: React.CSSProperties = {
@@ -324,10 +312,13 @@ const itemPrice: React.CSSProperties = {
   fontSize: "14px",
   fontWeight: "500",
   color: "#111827",
+  margin: "0",
 };
 
 const totalsSection: React.CSSProperties = {
   width: "100%",
+  paddingTop: "16px",
+  paddingBottom: "16px",
 };
 
 const totalsLabel: React.CSSProperties = {
@@ -339,20 +330,20 @@ const totalsLabel: React.CSSProperties = {
 const totalsValue: React.CSSProperties = {
   fontSize: "14px",
   color: "#111827",
+  fontWeight: "500",
   textAlign: "right" as const,
   paddingBottom: "8px",
 };
 
 const totalRow: React.CSSProperties = {
   borderTop: "1px solid #e5e7eb",
-  paddingTop: "8px",
 };
 
 const totalLabel: React.CSSProperties = {
   fontSize: "16px",
   fontWeight: "600",
   color: "#111827",
-  paddingTop: "8px",
+  paddingTop: "16px",
 };
 
 const totalValue: React.CSSProperties = {
@@ -360,12 +351,13 @@ const totalValue: React.CSSProperties = {
   fontWeight: "600",
   color: "#111827",
   textAlign: "right" as const,
-  paddingTop: "8px",
+  paddingTop: "16px",
 };
 
 const addressCol: React.CSSProperties = {
-  verticalAlign: "top",
   width: "50%",
+  verticalAlign: "top",
+  paddingRight: "16px",
 };
 
 const addressHeading: React.CSSProperties = {

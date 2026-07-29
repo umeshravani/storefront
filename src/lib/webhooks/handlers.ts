@@ -1,6 +1,7 @@
 import type { Order } from "@spree/sdk";
 import type { WebhookEvent } from "@spree/sdk/webhooks";
 import { createElement } from "react";
+import { AdminNewOrderEmail } from "@/lib/emails/admin-new-order";
 import { OrderCanceledEmail } from "@/lib/emails/order-canceled";
 import { OrderConfirmationEmail } from "@/lib/emails/order-confirmation";
 import { PasswordResetEmail } from "@/lib/emails/password-reset";
@@ -87,6 +88,33 @@ export async function handleOrderCompleted(event: WebhookEvent<Order>) {
     }),
   });
 
+  const adminEmail = process.env.SPREE_ADMIN_EMAIL || "";
+
+  await sendEmail({
+    to: adminEmail,
+    subject: `New Order Received #${order.number}`,
+    react: createElement(AdminNewOrderEmail, {
+      orderNumber: order.number,
+      customerName,
+      items: (order.items || []).map((item) => ({
+        name: item.name,
+        slug: item.slug,
+        quantity: item.quantity,
+        options_text: item.options_text,
+        display_price: item.display_price ?? "",
+        display_total: item.display_total ?? "",
+        thumbnail_url: item.thumbnail_url,
+      })),
+      displayItemTotal: order.display_item_total ?? "",
+      displayDeliveryTotal: order.display_delivery_total ?? "",
+      displayDiscountTotal: order.display_discount_total ?? undefined,
+      displayTaxTotal: order.display_tax_total ?? "",
+      displayTotal: order.display_total ?? "",
+      shippingAddress: order.shipping_address ?? undefined,
+      billingAddress: order.billing_address ?? undefined,
+      deliveryMethodName,
+    }),
+  });
   markProcessed(event.id);
 }
 

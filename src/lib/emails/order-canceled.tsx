@@ -14,6 +14,8 @@ import {
   Text,
 } from "react-email";
 import { getStoreName, getStoreUrl } from "@/lib/store";
+import { StoreFooter } from "./components/StoreFooter";
+import { StoreLogo } from "./components/StoreLogo";
 
 interface LineItem {
   name: string;
@@ -51,6 +53,7 @@ export function OrderCanceledEmail({
       </Preview>
       <Body style={main}>
         <Container style={container}>
+          <StoreLogo storeUrl={storeUrl} />
           <Heading style={heading}>Order Canceled</Heading>
           <Text style={paragraph}>
             Hi {firstName}, your order <strong>{orderNumber}</strong> has been
@@ -109,17 +112,7 @@ export function OrderCanceledEmail({
             If you have any questions, please don't hesitate to contact us.
           </Text>
 
-          <Text style={footer}>
-            {storeName}
-            {storeUrl && (
-              <>
-                {" - "}
-                <Link href={storeUrl} style={footerLink}>
-                  {storeUrl.replace(/^https?:\/\//, "")}
-                </Link>
-              </>
-            )}
-          </Text>
+          <StoreFooter storeName={storeName} storeUrl={storeUrl} />
         </Container>
       </Body>
     </Html>
@@ -226,15 +219,4 @@ const totalValue: React.CSSProperties = {
   fontWeight: "600",
   color: "#111827",
   textAlign: "right" as const,
-};
-
-const footer: React.CSSProperties = {
-  fontSize: "12px",
-  color: "#9ca3af",
-  textAlign: "center" as const,
-};
-
-const footerLink: React.CSSProperties = {
-  color: "#9ca3af",
-  textDecoration: "underline",
 };

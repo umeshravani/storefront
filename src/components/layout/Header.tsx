@@ -65,6 +65,7 @@ export async function Header({
   basePath,
   locale,
   mobileNavigation,
+  desktopNavigation,
 }: HeaderProps) {
   const t = await getTranslations({ locale, namespace: "header" });
   const wholesaleEnabled = isWholesaleEnabled();

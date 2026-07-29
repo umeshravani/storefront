@@ -28,7 +28,7 @@ export function RazorpayPaymentForm({
   // FIX: Check if Razorpay was already loaded on a previous mount.
   // This prevents the component from infinitely waiting for a script onLoad event that already fired.
   const [isScriptLoaded, setIsScriptLoaded] = useState(
-    typeof window !== "undefined" && !!(window as any).Razorpay
+    typeof window !== "undefined" && !!(window as any).Razorpay,
   );
 
   // Extract necessary Razorpay keys from the Spree session data securely
@@ -36,7 +36,9 @@ export function RazorpayPaymentForm({
   const orderId = sessionData._external_id as string;
 
   // Compute amount from cart (Razorpay expects paise/subunits)
-  const amount = Math.round(parseFloat(cart.amount_due ?? cart.total) * 100);
+  const amount = Math.round(
+    parseFloat(cart.amount_due ?? cart.total ?? "0") * 100,
+  );
   const currency = cart.currency || "INR";
 
   // Extract customer details natively from the Spree Cart object
@@ -63,11 +65,11 @@ export function RazorpayPaymentForm({
           name: "Checkout",
           order_id: orderId,
           handler: (response: any) => {
-            // 1. Resolve the promise immediately. 
+            // 1. Resolve the promise immediately.
             // This tells PaymentSection.tsx that the modal is closed and releases the safety lock.
             resolve({});
 
-            // 2. Wait a fraction of a second for React to process the lock release, 
+            // 2. Wait a fraction of a second for React to process the lock release,
             // then trigger the final Spree approval pipeline.
             setTimeout(() => {
               const sessionResultPayload = JSON.stringify({

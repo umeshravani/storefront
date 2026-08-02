@@ -156,15 +156,21 @@ export async function addToCart(
   variantId: string,
   quantity: number,
   surface: Surface = DEFAULT_SURFACE,
+  metadata?: Record<string, string>,
 ) {
   return actionResult(async () => {
     const cart = await getOrCreateCart(undefined, surface);
     const spreeToken = await getCartToken(surface);
     const token = await getAccessToken();
 
+    const payload: any = { variant_id: variantId, quantity };
+    if (metadata) {
+      payload.metadata = metadata;
+    }
+
     const updatedCart = await getClientForSurface(surface).carts.items.create(
       cart.id,
-      { variant_id: variantId, quantity },
+      payload,
       { spreeToken, token },
     );
 

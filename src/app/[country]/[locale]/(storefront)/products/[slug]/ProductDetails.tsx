@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
+import AddonSelector from "@/components/products/AddonSelector";
 import { HiddenPricePrompt } from "@/components/products/HiddenPricePrompt";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
@@ -92,6 +93,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     return product.default_variant || null;
   });
 
+  const [selectedAddonVariantIds, setSelectedAddonVariantIds] = useState<
+    string[]
+  >([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -215,7 +219,24 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
     setLoading(true);
     try {
-      await addItem(variantId, quantity);
+      const addPromises = [];
+
+      // 1. Add main item
+      addPromises.push(addItem(variantId, quantity));
+
+      // 2. Add add-ons with metadata
+      if (selectedAddonVariantIds.length > 0) {
+        for (const addonVariantId of selectedAddonVariantIds) {
+          addPromises.push(
+            addItem(addonVariantId, quantity, {
+              is_addon: "true",
+              parent_item_sku: sku || "",
+            }),
+          );
+        }
+      }
+
+      await Promise.all(addPromises);
     } catch (error) {
       console.error("Failed to add to cart:", error);
       return;
@@ -387,6 +408,14 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             </div>
           )}
 
+          {/* Add-on Selector */}
+          {product.custom_fields && (
+            <AddonSelector
+              customFields={product.custom_fields}
+              onAddonChange={setSelectedAddonVariantIds}
+            />
+          )}
+
           {/* Live Dynamic Cart Error Banner */}
           {cartError && (
             <div className="mt-6 flex items-start gap-3 text-sm text-red-800 bg-red-50 p-4 rounded-lg border border-red-200">
@@ -539,8 +568,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             return null;
           })}
 
-          {/* Custom Fields */}
-          <ProductCustomFields customFields={product.custom_fields} />
+          {/* Custom Fields (Filtered to hide internal add-on logic) */}
+          <ProductCustomFields
+            customFields={product.custom_fields?.filter(
+              (field) => !field.key.startsWith("addons."),
+            )}
+          />
 
           {/* Product Details */}
           <div className="border-t border-gray-200">

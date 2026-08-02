@@ -29,7 +29,11 @@ interface CartContextType {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (variantId: string, quantity?: number) => Promise<void>;
+  addItem: (
+    variantId: string,
+    quantity?: number,
+    metadata?: Record<string, string>,
+  ) => Promise<void>;
   updateItem: (lineItemId: string, quantity: number) => Promise<void>;
   removeItem: (lineItemId: string) => Promise<void>;
   refreshCart: () => Promise<void>;
@@ -97,9 +101,13 @@ export function CartProvider({
   );
 
   const addItem = useCallback(
-    async (variantId: string, quantity = 1) => {
+    async (
+      variantId: string,
+      quantity = 1,
+      metadata?: Record<string, string>,
+    ) => {
       await mutateCart(
-        () => addToCartAction(variantId, quantity, surface),
+        () => addToCartAction(variantId, quantity, surface, metadata),
         t("failedToAddItem"),
         () => setIsOpen(true),
       );

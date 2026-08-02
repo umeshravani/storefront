@@ -73,8 +73,20 @@ export function CartDrawer() {
     }
   }, [isOpen, cart]);
 
-  const lineItems = cart?.items || [];
-  const isEmpty = lineItems.length === 0;
+  const allLineItems = cart?.items || [];
+  const isEmpty = allLineItems.length === 0;
+
+  // Separate main items from add-ons
+  const mainItems = allLineItems.filter(
+    (item: any) =>
+      item.metadata?.is_addon !== "true" &&
+      item.public_metadata?.is_addon !== "true",
+  );
+  const addonItems = allLineItems.filter(
+    (item: any) =>
+      item.metadata?.is_addon === "true" ||
+      item.public_metadata?.is_addon === "true",
+  );
 
   return (
     <Sheet
@@ -141,91 +153,145 @@ export function CartDrawer() {
             </div>
           ) : (
             <ul className="divide-y divide-gray-200">
-              {lineItems.map((item) => (
-                <li key={item.id} className="p-4">
-                  <div className="flex gap-4">
-                    {/* Image */}
-                    <Link
-                      href={`${basePath}/products/${item.slug}`}
-                      className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0"
-                      onClick={closeCart}
-                    >
-                      <ProductImage
-                        src={item.thumbnail_url}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                        sizes="96px"
-                      />
-                    </Link>
-
-                    {/* Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <Link
-                          href={`${basePath}/products/${item.slug}`}
-                          className="font-medium text-gray-900 hover:text-primary line-clamp-2"
-                          onClick={closeCart}
-                        >
-                          {item.name}
-                        </Link>
-                        <Button
-                          variant="destructive"
-                          size="icon-xs"
-                          onClick={async () => {
-                            await removeItem(item.id);
-                            if (cart) {
-                              trackRemoveFromCart(item, cart.currency);
-                            }
-                          }}
-                          disabled={updating}
-                          aria-label={t("removeItemLabel", { name: item.name })}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-
-                      {/* Options */}
-                      {item.options_text && (
-                        <p className="mt-1 text-sm text-gray-500">
-                          {item.options_text}
-                        </p>
-                      )}
-
-                      {/* Quantity & Price */}
-                      <div className="mt-3 flex items-center justify-between">
-                        <QuantityPickerField
-                          quantity={item.quantity}
-                          onQuantityChange={(quantity) =>
-                            updateItem(item.id, quantity)
-                          }
-                          disabled={updating}
+              {mainItems.map((item) => {
+                const childAddons = addonItems.filter(
+                  (addon: any) =>
+                    (addon.metadata?.parent_item_sku ||
+                      addon.public_metadata?.parent_item_sku) ===
+                    (item as any).variant?.sku,
+                );
+                return (
+                  <li key={item.id} className="p-4">
+                    <div className="flex gap-4">
+                      {/* Image */}
+                      <Link
+                        href={`${basePath}/products/${item.slug}`}
+                        className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0"
+                        onClick={closeCart}
+                      >
+                        <ProductImage
+                          src={item.thumbnail_url}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                          sizes="96px"
                         />
+                      </Link>
 
-                        <div className="text-sm font-medium flex flex-col items-end">
-                          {item.compare_at_amount &&
-                          item.price != null &&
-                          parseFloat(item.compare_at_amount) >
-                            parseFloat(item.price) ? (
-                            <>
-                              <span className="text-gray-400 line-through">
-                                {item.display_compare_at_amount}
-                              </span>
-                              <span className="text-red-600 mt-0.5">
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <Link
+                            href={`${basePath}/products/${item.slug}`}
+                            className="font-medium text-gray-900 hover:text-primary line-clamp-2"
+                            onClick={closeCart}
+                          >
+                            {item.name}
+                          </Link>
+                          <Button
+                            variant="destructive"
+                            size="icon-xs"
+                            onClick={async () => {
+                              await removeItem(item.id);
+                              if (cart) {
+                                trackRemoveFromCart(item, cart.currency);
+                              }
+                            }}
+                            disabled={updating}
+                            aria-label={t("removeItemLabel", {
+                              name: item.name,
+                            })}
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Options */}
+                        {item.options_text && (
+                          <p className="mt-1 text-sm text-gray-500">
+                            {item.options_text}
+                          </p>
+                        )}
+
+                        {/* Add-ons nested visually */}
+                        {childAddons.length > 0 && (
+                          <div className="mt-3 mb-2 pl-4 border-l-2 border-gray-200 space-y-2">
+                            {childAddons.map((addon) => (
+                              <div
+                                key={addon.id}
+                                className="flex justify-between items-start text-sm text-gray-600"
+                              >
+                                <div className="flex flex-col">
+                                  <span>↳ {addon.name}</span>
+                                  {addon.quantity > 1 && (
+                                    <span className="text-xs text-gray-400">
+                                      Qty: {addon.quantity}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span>{addon.display_price}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className="h-6 w-6 text-gray-400 hover:text-red-600 shrink-0"
+                                    onClick={async () => {
+                                      await removeItem(addon.id);
+                                      if (cart) {
+                                        trackRemoveFromCart(
+                                          addon as any,
+                                          cart.currency,
+                                        );
+                                      }
+                                    }}
+                                    disabled={updating}
+                                    aria-label={t("removeItemLabel", {
+                                      name: addon.name,
+                                    })}
+                                  >
+                                    <Trash className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Quantity & Price */}
+                        <div className="mt-3 flex items-center justify-between">
+                          <QuantityPickerField
+                            quantity={item.quantity}
+                            onQuantityChange={(quantity) =>
+                              updateItem(item.id, quantity)
+                            }
+                            disabled={updating}
+                          />
+
+                          <div className="text-sm font-medium flex flex-col items-end">
+                            {item.compare_at_amount &&
+                            item.price != null &&
+                            parseFloat(item.compare_at_amount) >
+                              parseFloat(item.price) ? (
+                              <>
+                                <span className="text-gray-400 line-through">
+                                  {item.display_compare_at_amount}
+                                </span>
+                                <span className="text-red-600 mt-0.5">
+                                  {item.display_price}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-gray-900">
                                 {item.display_price}
                               </span>
-                            </>
-                          ) : (
-                            <span className="text-gray-900">
-                              {item.display_price}
-                            </span>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

@@ -568,11 +568,17 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             return null;
           })}
 
-          {/* Custom Fields (Filtered to hide internal add-on logic) */}
+          {/* Custom Fields (Filtered to hide internal logic) */}
           <ProductCustomFields
-            customFields={product.custom_fields?.filter(
-              (field) => !field.key.startsWith("addons."),
-            )}
+            customFields={product.custom_fields?.filter((field) => {
+              // Hide any internal metafield namespaces from the customer UI
+              const isInternal =
+                field.key.startsWith("addons.") ||
+                field.key.startsWith("store.") ||
+                field.key.startsWith("ui.");
+
+              return !isInternal;
+            })}
           />
 
           {/* Product Details */}

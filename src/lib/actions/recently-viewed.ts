@@ -13,7 +13,18 @@ export async function getProductsBySlugs(slugs: string[]): Promise<Product[]> {
   const results = await Promise.all(
     slugs.map(async (slug) => {
       try {
-        return await getProduct(slug);
+        const product = await getProduct(slug, { expand: ["custom_fields"] });
+        if (!product) return null;
+
+        const hideField = product.custom_fields?.find(
+          (f: any) => f.key === "store.hide_from_storefront",
+        );
+        if (hideField && hideField.value != null) {
+          const val = String(hideField.value).toLowerCase();
+          if (val === "true" || val === "1") return null;
+        }
+
+        return product;
       } catch {
         return null;
       }

@@ -35,6 +35,7 @@ export const PRODUCT_CARD_FIELDS = [
   "price",
   "original_price",
   "categories",
+  "custom_fields",
 ];
 
 export const getCachedProduct = cache(

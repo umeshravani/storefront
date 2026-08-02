@@ -15,8 +15,9 @@ export async function fetchAddonProducts(slugs: string) {
       try {
         // Fetch directly by Slug (100% reliable, bypasses the search engine completely)
         const product = await client.products.get(slug, {
-          // We need variants expanded so the UI knows which variant_id to add to the cart
-          expand: ["variants"],
+          // We need variants expanded so the UI knows which variant_id to add to the cart,
+          // and custom_fields so the UI can read the ui.icon_name metafield.
+          expand: ["variants", "custom_fields"],
         });
 
         if (product && product.id) {

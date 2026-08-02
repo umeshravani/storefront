@@ -48,7 +48,54 @@ export async function getProducts(
 ) {
   const options = await getLocaleOptions();
   const userToken = await getAccessToken();
-  return cachedListProducts(params, options, surface, userToken);
+
+  // 1. Force the API to expand custom_fields so we can read the hide_from_storefront flag
+  const fetchParams = { ...params };
+  if (!fetchParams.expand) {
+    fetchParams.expand = ["custom_fields"];
+  } else if (
+    Array.isArray(fetchParams.expand) &&
+    !fetchParams.expand.includes("custom_fields")
+  ) {
+    fetchParams.expand = [...fetchParams.expand, "custom_fields"];
+  }
+
+  // 2. Fetch the catalog
+  const response: any = await cachedListProducts(
+    fetchParams,
+    options,
+    surface,
+    userToken,
+  );
+
+  // 3. Filter out any product where `store.hide_from_storefront` is true
+  if (response && response.data) {
+    response.data = response.data.filter((product: any) => {
+      const hideField = product.custom_fields?.find(
+        (f: any) => f.key === "store.hide_from_storefront",
+      );
+      if (!hideField || hideField.value == null) return true; // Show by default
+
+      const val = String(hideField.value).toLowerCase();
+      return !(val === "true" || val === "1"); // Remove from array if hidden
+    });
+  } else if (response && response.isSuccess && response.isSuccess()) {
+    // Fallback if Spree SDK returned an ISpreeResponse without a top-level .data
+    const successData = response.success();
+    if (successData && successData.data) {
+      successData.data = successData.data.filter((product: any) => {
+        const hideField = product.custom_fields?.find(
+          (f: any) => f.key === "store.hide_from_storefront",
+        );
+        if (!hideField || hideField.value == null) return true; // Show by default
+
+        const val = String(hideField.value).toLowerCase();
+        return !(val === "true" || val === "1"); // Remove from array if hidden
+      });
+    }
+  }
+
+  return response;
 }
 
 /**

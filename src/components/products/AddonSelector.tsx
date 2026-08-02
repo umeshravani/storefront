@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus, Radio, Smartphone, Speaker as SpeakerIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { fetchAddonProducts } from "@/lib/data/addons";
 
@@ -19,23 +20,18 @@ export default function AddonSelector({
   const slugsToFetch = useMemo(() => {
     const slugs: string[] = [];
 
-    // Helper function to safely and type-check Spree boolean metafields
     const isFieldEnabled = (key: string) => {
       const field = customFields?.find((f) => f.key === key);
       if (!field || field.value == null) return false;
-
-      // Safely cast to string to prevent TypeScript build errors
       const val = String(field.value).toLowerCase();
       return val === "true" || val === "1";
     };
 
-    // If enabled, automatically fetch the exact product slug
     if (isFieldEnabled("addons.has_remote")) {
       slugs.push("ir-remote-controller");
     }
 
     if (isFieldEnabled("addons.has_speakers")) {
-      // NOTE: Ensure this matches the EXACT slug of your speakers product!
       slugs.push("built-in-stereo-speakers");
     }
 
@@ -73,17 +69,14 @@ export default function AddonSelector({
   const handleToggle = (variantId: string) => {
     const nextSelected = new Set(selectedAddons);
     if (nextSelected.has(variantId)) {
-      nextSelected.delete(variantId); // Deselect if already selected
+      nextSelected.delete(variantId);
     } else {
-      nextSelected.add(variantId); // Select
+      nextSelected.add(variantId);
     }
     setSelectedAddons(nextSelected);
-
-    // Pass the selected variant IDs back to the parent form
     onAddonChange(Array.from(nextSelected));
   };
 
-  // Calculate dynamically selected names for the UI header
   const selectedNames = useMemo(() => {
     return addons
       .filter((addon) =>
@@ -92,6 +85,26 @@ export default function AddonSelector({
       .map((addon) => addon.name)
       .join(", ");
   }, [addons, selectedAddons]);
+
+  // Helper to render the custom icon driven by the Spree Metafield
+  const renderIcon = (
+    iconName: string,
+    isSelected: boolean,
+    isOutOfStock: boolean,
+  ) => {
+    const iconClasses = `w-4 h-4 shrink-0 ${isOutOfStock ? "text-gray-400" : isSelected ? "text-gray-300" : "text-gray-500"}`;
+
+    switch (iconName?.toLowerCase()) {
+      case "smartphone":
+        return <Smartphone className={iconClasses} />;
+      case "speaker":
+        return <SpeakerIcon className={iconClasses} />;
+      case "remote":
+        return <Radio className={iconClasses} />;
+      default:
+        return <Plus className={iconClasses} />; // Fallback icon
+    }
+  };
 
   if (isLoading || addons.length === 0) return null;
 
@@ -109,29 +122,53 @@ export default function AddonSelector({
 
       <div className="flex flex-wrap gap-3">
         {addons.map((addon) => {
-          // Use default_variant_id for the cart addition
           const variantId = addon.default_variant_id || addon.id;
           const isSelected = selectedAddons.has(variantId);
+
+          // Native Spree property that respects inventory and backorder settings
+          const isOutOfStock = !addon.purchasable;
+
+          // Read the icon name from the Addon product's custom fields
+          const iconName = addon.custom_fields?.find(
+            (f: any) => f.key === "ui.icon_name",
+          )?.value;
 
           return (
             <button
               key={addon.id}
               type="button"
-              onClick={() => handleToggle(variantId)}
+              disabled={isOutOfStock}
+              onClick={() => !isOutOfStock && handleToggle(variantId)}
               className={`
-                                px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border cursor-pointer
-                                flex items-center gap-2
-                                ${
-                                  isSelected
-                                    ? "bg-gray-900 border-gray-900 text-white font-medium"
-                                    : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
-                                }
-                            `}
+                  px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border cursor-pointer
+                  flex items-center gap-2 outline-none select-none
+                  ${
+                    isOutOfStock
+                      ? "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-75"
+                      : isSelected
+                        ? "bg-gray-900 border-gray-900 text-white font-medium"
+                        : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                  }
+              `}
             >
+              {renderIcon(iconName, isSelected, isOutOfStock)}
+
               <span>{addon.name}</span>
-              <span className={isSelected ? "text-gray-300" : "text-gray-500"}>
-                (+ {addon.price?.display_amount || ""})
-              </span>
+
+              {!isOutOfStock && (
+                <span
+                  className={isSelected ? "text-gray-300" : "text-gray-500"}
+                >
+                  (+ {addon.price?.display_amount || ""})
+                </span>
+              )}
+
+              {/* Exact matched Out of Stock UI */}
+              {isOutOfStock && (
+                <span className="ml-2 text-xs font-normal text-gray-400">
+                  (Out of stock)
+                </span>
+              )}
             </button>
           );
         })}

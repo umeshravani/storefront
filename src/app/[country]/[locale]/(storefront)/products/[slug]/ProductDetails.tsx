@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import AddonSelector from "@/components/products/AddonSelector";
+import ComplementaryProducts from "@/components/products/ComplementaryProducts";
 import { HiddenPricePrompt } from "@/components/products/HiddenPricePrompt";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
@@ -435,7 +436,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 </Link>
               </Button>
             ) : (
-              <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col md:flex-row flex-wrap gap-4">
                 {/* Quantity & Add to Cart */}
                 <div className="flex gap-4 w-full md:w-auto shrink-0">
                   <QuantityPickerField
@@ -491,6 +492,16 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               </div>
             )}
           </div>
+
+          {/* ========================================= */}
+          {/* NEW: Complementary Products Cross-Sell */}
+          {/* ========================================= */}
+          {product.custom_fields && (
+            <ComplementaryProducts
+              customFields={product.custom_fields}
+              basePath={basePath}
+            />
+          )}
 
           {/* 
   {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (

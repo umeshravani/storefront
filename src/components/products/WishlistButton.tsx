@@ -14,12 +14,14 @@ interface WishlistButtonProps {
   variantId: string | number;
   basePath: string;
   currentPath: string;
+  buttonVariant?: "icon" | "inline";
 }
 
 export function WishlistButton({
   variantId,
   basePath,
   currentPath,
+  buttonVariant = "icon",
 }: WishlistButtonProps) {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -92,6 +94,27 @@ export function WishlistButton({
       setBusy(false);
     }
   };
+
+  if (buttonVariant === "inline") {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={busy}
+        aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
+        aria-pressed={isSaved}
+        className="inline-flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer text-sm font-medium transition-colors disabled:opacity-60"
+      >
+        <Heart
+          className="w-[18px] h-[18px]"
+          strokeWidth={2}
+          fill={isSaved ? "#F07867" : "none"}
+          color={isSaved ? "#F07867" : "#1a1a1a"}
+        />
+        {isSaved ? "Remove from wishlist" : "Add to wishlist"}
+      </button>
+    );
+  }
 
   return (
     <button

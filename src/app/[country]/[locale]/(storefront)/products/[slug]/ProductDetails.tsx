@@ -16,8 +16,10 @@ import { useEffect, useMemo, useState } from "react";
 import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import AddonSelector from "@/components/products/AddonSelector";
 import ComplementaryProducts from "@/components/products/ComplementaryProducts";
+import { HelpCenter } from "@/components/products/HelpCenter";
 import { HiddenPricePrompt } from "@/components/products/HiddenPricePrompt";
 import { MediaGallery } from "@/components/products/MediaGallery";
+import { ProductAddons } from "@/components/products/ProductAddons";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
@@ -502,6 +504,22 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               basePath={basePath}
             />
           )}
+
+          {/* Product Addons (Compare Colors, Wishlist, Share) */}
+          <ProductAddons
+            product={product}
+            variantId={
+              selectedVariant?.id ||
+              product.default_variant?.id ||
+              product.default_variant_id ||
+              ""
+            }
+            basePath={basePath}
+            currentPath={`${basePath}/products/${product.slug}`}
+          />
+
+          {/* Help Center */}
+          <HelpCenter />
 
           {/* 
   {process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && (

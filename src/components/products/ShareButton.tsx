@@ -1,49 +1,52 @@
 "use client";
 
-import { Check, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { useState } from "react";
+import { ShareModal } from "./ShareModal";
 
 interface ShareButtonProps {
   title: string;
+  buttonVariant?: "icon" | "inline";
 }
 
-export function ShareButton({ title }: ShareButtonProps) {
-  const [copied, setCopied] = useState(false);
+export function ShareButton({
+  title,
+  buttonVariant = "icon",
+}: ShareButtonProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleClick = async () => {
-    const url = window.location.href;
-
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title, url });
-      } catch {
-        // User cancelled the native share sheet — no action needed.
-      }
-      return;
-    }
-
-    // Desktop / unsupported browsers: copy the link instead.
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard access denied — silently ignore.
-    }
+  const handleClick = () => {
+    setIsModalOpen(true);
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-label="Share this product"
-      className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-    >
-      {copied ? (
-        <Check className="w-[18px] h-[18px] text-green-600" strokeWidth={2} />
+    <>
+      {buttonVariant === "inline" ? (
+        <button
+          type="button"
+          onClick={handleClick}
+          aria-label="Share this product"
+          className="inline-flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer text-sm font-medium transition-colors"
+        >
+          <Share2 className="w-[18px] h-[18px] text-gray-900" strokeWidth={2} />
+          Share
+        </button>
       ) : (
-        <Share2 className="w-[18px] h-[18px] text-gray-900" strokeWidth={2} />
+        <button
+          type="button"
+          onClick={handleClick}
+          aria-label="Share this product"
+          className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center shadow-sm hover:bg-white transition-colors cursor-pointer"
+        >
+          <Share2 className="w-[18px] h-[18px] text-gray-900" strokeWidth={2} />
+        </button>
       )}
-    </button>
+
+      <ShareModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={title}
+      />
+    </>
   );
 }

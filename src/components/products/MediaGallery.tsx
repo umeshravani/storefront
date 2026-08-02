@@ -5,8 +5,6 @@ import { ZoomIn } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
-import { ShareButton } from "@/components/products/ShareButton";
-import { WishlistButton } from "@/components/products/WishlistButton";
 import { ProductImage } from "@/components/ui/product-image";
 
 const SWIPE_THRESHOLD_PX = 50;
@@ -181,18 +179,6 @@ function MediaGalleryInner({
             </div>
           )}
         </button>
-
-        {/* Wishlist + Share overlay (Safely inside the relative wrapper with z-10) */}
-        {variantId && basePath && currentPath && (
-          <div className="absolute top-3 right-3 flex flex-col sm:flex-row gap-2 z-10">
-            <WishlistButton
-              variantId={variantId}
-              basePath={basePath}
-              currentPath={currentPath}
-            />
-            <ShareButton title={productName} />
-          </div>
-        )}
       </div>
 
       {/* Thumbnails */}

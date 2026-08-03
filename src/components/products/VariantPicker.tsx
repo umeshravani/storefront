@@ -219,7 +219,7 @@ export function VariantPicker({
                         px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border flex items-center justify-center gap-2
                         ${
                           isSelected
-                            ? "bg-gray-900 border-gray-900 text-white font-medium"
+                            ? "bg-black border-black text-white font-medium"
                             : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
                         }
                         ${!isAvailable ? "opacity-30 cursor-not-allowed !bg-gray-50 !text-gray-400" : "cursor-pointer"}
@@ -229,7 +229,7 @@ export function VariantPicker({
                         <img
                           src={optionValue.image_url}
                           alt=""
-                          className={`w-5 h-5 object-contain shrink-0 ${isSelected ? "invert" : ""}`}
+                          className={`w-5 h-5 object-contain shrink-0 transition-all duration-200 ${isSelected ? "invert" : ""}`}
                         />
                       )}
                       <span>{optionValue?.label || value}</span>

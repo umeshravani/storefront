@@ -229,7 +229,7 @@ export function VariantPicker({
                         <img
                           src={optionValue.image_url}
                           alt=""
-                          className="w-5 h-5 object-contain shrink-0"
+                          className={`w-5 h-5 object-contain shrink-0 ${isSelected ? "invert" : ""}`}
                         />
                       )}
                       <span>{optionValue?.label || value}</span>

@@ -216,7 +216,7 @@ export function VariantPicker({
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
                       className={`
-                        px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border
+                        px-5 py-2.5 rounded-lg text-sm transition-colors duration-200 border flex items-center justify-center gap-2
                         ${
                           isSelected
                             ? "bg-gray-900 border-gray-900 text-white font-medium"
@@ -225,7 +225,14 @@ export function VariantPicker({
                         ${!isAvailable ? "opacity-30 cursor-not-allowed !bg-gray-50 !text-gray-400" : "cursor-pointer"}
                       `}
                     >
-                      {optionValue?.label || value}
+                      {optionValue?.image_url && (
+                        <img
+                          src={optionValue.image_url}
+                          alt=""
+                          className="w-5 h-5 object-contain shrink-0"
+                        />
+                      )}
+                      <span>{optionValue?.label || value}</span>
                       {!isPurchasable && isAvailable && (
                         <span
                           className={`ml-2 text-xs font-normal ${

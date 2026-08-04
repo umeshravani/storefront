@@ -6,15 +6,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { fetchRelatedProducts } from "@/lib/data/related";
 
-interface ComplementaryProductsProps {
+interface RelatedVariantsProps {
   customFields: Array<{ key: string; value: any }>;
   basePath: string;
 }
 
-export default function ComplementaryProducts({
+export default function RelatedVariants({
   customFields,
   basePath,
-}: ComplementaryProductsProps) {
+}: RelatedVariantsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addingIds, setAddingIds] = useState<Record<string, boolean>>({});

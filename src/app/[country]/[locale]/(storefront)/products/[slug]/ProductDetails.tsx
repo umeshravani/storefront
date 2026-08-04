@@ -15,12 +15,12 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import AddonSelector from "@/components/products/AddonSelector";
-import ComplementaryProducts from "@/components/products/ComplementaryProducts";
 import { HelpCenter } from "@/components/products/HelpCenter";
 import { HiddenPricePrompt } from "@/components/products/HiddenPricePrompt";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductAddons } from "@/components/products/ProductAddons";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
+import RelatedVariants from "@/components/products/RelatedVariants";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
@@ -496,10 +496,10 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           </div>
 
           {/* ========================================= */}
-          {/* NEW: Complementary Products Cross-Sell */}
+          {/* NEW: Related Variants Cross-Sell */}
           {/* ========================================= */}
           {product.custom_fields && (
-            <ComplementaryProducts
+            <RelatedVariants
               customFields={product.custom_fields}
               basePath={basePath}
             />

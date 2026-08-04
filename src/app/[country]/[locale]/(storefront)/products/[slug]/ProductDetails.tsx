@@ -415,6 +415,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           {product.custom_fields && (
             <AddonSelector
               customFields={product.custom_fields}
+              selectedVariant={selectedVariant}
               onAddonChange={setSelectedAddonVariantIds}
             />
           )}

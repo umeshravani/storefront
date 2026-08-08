@@ -482,6 +482,10 @@ function CheckoutPageContentInner({
           // Analytics should never break checkout flow
         }
 
+        // Safety delay to allow Next.js Auth Context to hydrate the Bearer token
+        // to prevent 401 Unauthorized errors during checkout completion
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Complete the order — if the backend already completed it during
         // session completion, completeCheckoutOrder handles 403/422 gracefully.
         const completeResult = await completeCheckoutOrder(currentOrder.id);

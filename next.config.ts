@@ -116,6 +116,18 @@ const nextConfig: NextConfig = {
   redirects: async () => {
     return [
       {
+        // Enforce non-www domain globally to fix GSC indexing loops
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.thewallx.com",
+          },
+        ],
+        destination: "https://thewallx.com/:path*",
+        permanent: true,
+      },
+      {
         // Redirect legacy Spree Taxons to Next.js Categories
         source: "/t/:path*",
         destination: "/in/en/c/:path*",

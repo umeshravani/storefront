@@ -453,6 +453,7 @@ function CheckoutPageContentInner({
       if (!currentOrder) return;
 
       setError(null);
+      let isPaymentSecured = false; // Tracks if money was successfully captured
 
       try {
         // For session-based payments, complete the payment session first
@@ -473,8 +474,32 @@ function CheckoutPageContentInner({
             setProcessing(false);
             return;
           }
+
+          // THE POINT OF NO RETURN: Payment is verified and secured in Spree!
+          isPaymentSecured = true;
+
+          // VITAL CHECK: Spree 5.6 often auto-completes orders the millisecond the payment session is fulfilled.
+          const anyResult = sessionResult as any;
+          const updatedOrder =
+            anyResult.cart || anyResult.order || anyResult.session?.order;
+          if (
+            updatedOrder &&
+            (updatedOrder.current_step === "complete" ||
+              updatedOrder.state === "complete")
+          ) {
+            const { cacheCompletedOrder } = await import(
+              "@/lib/utils/completed-order-cache"
+            );
+            cacheCompletedOrder(currentOrder.id, updatedOrder);
+            routerRef.current.push(
+              `${basePath}/order-placed/${currentOrder.id}`,
+            );
+            return;
+          }
+        } else {
+          // Direct payments (COD) are "secured" in the sense that we can proceed to complete
+          isPaymentSecured = true;
         }
-        // For direct payments, the payment was already created in PaymentSection
 
         try {
           trackAddPaymentInfo(currentOrder);
@@ -482,14 +507,24 @@ function CheckoutPageContentInner({
           // Analytics should never break checkout flow
         }
 
-        // Safety delay to allow Next.js Auth Context to hydrate the Bearer token
-        // to prevent 401 Unauthorized errors during checkout completion
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Complete the order — if the backend already completed it during
-        // session completion, completeCheckoutOrder handles 403/422 gracefully.
+        // Attempt final completion natively
         const completeResult = await completeCheckoutOrder(currentOrder.id);
+
         if (!completeResult.success) {
+          // SHOPIFY-GRADE FAILSAFE:
+          // If completion fails (e.g., 401 network drop) BUT the payment session succeeded,
+          // we MUST NOT leave the user on the checkout page. Leaving them allows them
+          // to hit 'Back' and delete paid items from the cart. Force redirect forward.
+          if (isPaymentSecured) {
+            console.warn(
+              "Checkout completion rejected, but payment was secured. Forcing forward navigation to prevent cart tampering.",
+            );
+            routerRef.current.push(
+              `${basePath}/order-placed/${currentOrder.id}?verify=true`,
+            );
+            return;
+          }
+
           setError(
             completeResult.error || tRef.current("failedToCompleteOrder"),
           );
@@ -506,9 +541,16 @@ function CheckoutPageContentInner({
         }
 
         routerRef.current.push(`${basePath}/order-placed/${currentOrder.id}`);
-      } catch {
-        setError(tRef.current("generalError"));
-        setProcessing(false);
+      } catch (err) {
+        if (isPaymentSecured) {
+          // Failsafe catch block: If anything crashes after payment is secured, push forward.
+          routerRef.current.push(
+            `${basePath}/order-placed/${currentOrder.id}?verify=true`,
+          );
+        } else {
+          setError(tRef.current("generalError"));
+          setProcessing(false);
+        }
       }
     },
     [basePath],

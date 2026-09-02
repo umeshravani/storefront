@@ -25,23 +25,18 @@ export function RazorpayPaymentForm({
 }: RazorpayPaymentFormProps) {
   const [error, setError] = useState<string | null>(null);
 
-  // FIX: Check if Razorpay was already loaded on a previous mount.
-  // This prevents the component from infinitely waiting for a script onLoad event that already fired.
   const [isScriptLoaded, setIsScriptLoaded] = useState(
     typeof window !== "undefined" && !!(window as any).Razorpay,
   );
 
-  // Extract necessary Razorpay keys from the Spree session data securely
   const clientKey = sessionData.client_key as string;
   const orderId = sessionData._external_id as string;
 
-  // Compute amount from cart (Razorpay expects paise/subunits)
   const amount = Math.round(
     parseFloat(cart.amount_due ?? cart.total ?? "0") * 100,
   );
   const currency = cart.currency || "INR";
 
-  // Extract customer details natively from the Spree Cart object
   const customerName = cart.billing_address
     ? `${cart.billing_address.first_name} ${cart.billing_address.last_name}`
     : "";
@@ -64,25 +59,24 @@ export function RazorpayPaymentForm({
           currency: currency,
           name: "Checkout",
           order_id: orderId,
-          handler: (response: any) => {
-            // 1. Resolve the promise immediately.
-            // This tells PaymentSection.tsx that the modal is closed and releases the safety lock.
-            resolve({});
-
-            // 2. Wait a fraction of a second for React to process the lock release,
-            // then trigger the final Spree approval pipeline.
-            setTimeout(() => {
+          handler: async (response: any) => {
+            try {
               const sessionResultPayload = JSON.stringify({
                 razorpay_order_id: orderId,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               });
 
-              onApproved(sessionResultPayload).catch((err) => {
-                console.error("Approval flow failed:", err);
-                setError("Failed to finalize order. Please contact support.");
+              // FIX: Await the backend confirmation BEFORE closing the modal promise.
+              // This keeps the PaymentSection spinner active and forcefully locks the UI.
+              await onApproved(sessionResultPayload);
+              resolve({});
+            } catch (err) {
+              console.error("Approval flow failed:", err);
+              resolve({
+                error: "Failed to finalize order. Please contact support.",
               });
-            }, 150);
+            }
           },
           prefill: {
             name: customerName,
